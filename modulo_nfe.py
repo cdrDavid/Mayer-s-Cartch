@@ -8,7 +8,7 @@ import config
 def mostrar_tela_emissao_nfe(janela_principal, limpar_tela, centralizar_janela, voltar_menu_callback):
     """Tela de Emissão e Gestão de NF-e preparada para Integração com API"""
     limpar_tela(janela_principal)
-    centralizar_janela(janela_principal, 1100, 700)
+    centralizar_janela(janela_principal, config.LARGURA_PADRAO, config.ALTURA_PADRAO)
 
     frame_principal = tk.Frame(janela_principal, padx=20, pady=15)
     frame_principal.pack(fill="both", expand=True)

@@ -1,17 +1,26 @@
 import os
+import sys
 import psycopg2
 from dotenv import load_dotenv
 
-# Carrega as variáveis de ambiente do arquivo .env
-load_dotenv()
+# Descobre se o código está rodando como executável compilado ou como script normal
+if getattr(sys, 'frozen', False):
+    # Se for executável, pega o caminho temporário onde o PyInstaller descompacta os arquivos
+    base_path = sys._MEIPASS
+else:
+    # Se for no VS Code, pega a pasta atual do projeto
+    base_path = os.path.dirname(os.path.abspath(__file__))
+
+env_path = os.path.join(base_path, '.env')
+load_dotenv(env_path)
 
 # Configurações globais do sistema
-LARGURA_PADRAO = 1100
-ALTURA_PADRAO = 680
+LARGURA_PADRAO = 1280
+ALTURA_PADRAO = 720
 usuario_logado = None
 modo_escuro_ativo = False
 
-# Puxa a string de conexão completa diretamente do arquivo .env
+# Puxa a string de conexão completa
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 def obter_conexao_banco():

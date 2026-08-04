@@ -186,8 +186,7 @@ def mostrar_menu_principal(aba_selecionada_indice=0):
     
     tk.Button(f_adm, text="📢 Feed de Notícias", command=lambda: modulo_admin.mostrar_tela_gerenciar_feed(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(4)), bg="#333333", fg="white", font=("Arial", 11, "bold"), height=2, width=45).pack(pady=(0, 10))
     tk.Button(f_adm, text="⚙️ Configurações do Sistema", command=lambda: modulo_admin.mostrar_tela_configuracoes(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(4)), bg="#1F4E79", fg="white", font=("Arial", 11, "bold"), height=2, width=45).pack(pady=(0, 10))
-    tk.Button(f_adm, text="🔑 Alterar Senha", command=lambda: modulo_admin.mostrar_tela_alterar_senha(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(4)), bg="#38761D", fg="white", font=("Arial", 11, "bold"), height=2, width=45).pack(pady=(0, 10))
-
+    
     # Seleciona e foca na aba correta ao retornar
     try:
         notebook.select(aba_selecionada_indice)
