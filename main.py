@@ -19,6 +19,28 @@ def centralizar_janela(janela, largura, altura):
     pos_y = (altura_tela // 2) - (altura // 2)
     janela.geometry(f"{largura}x{altura}+{pos_x}+{pos_y}")
 
+def configurar_atalho_esc_global(janela):
+    """Torna a tecla ESC universal para desmarcar qualquer linha azul em tabelas do sistema"""
+    def desmarcar_tabelas_global(event=None):
+        def limpar_recursivo(widget):
+            if isinstance(widget, ttk.Treeview):
+                for item in widget.selection():
+                    widget.selection_remove(item)
+            for filho in widget.winfo_children():
+                limpar_recursivo(filho)
+                
+        limpar_recursivo(janela)
+
+    janela.bind_all("<Escape>", desmarcar_tabelas_global)
+
+def configurar_atalho_enter_global(janela):
+    """Torna a tecla ENTER universal para avançar em formulários"""
+    def avancar_tabelas_global(event=None):
+        widget_focado = janela.focus_get()
+        if isinstance(widget_focado, tk.Entry):
+            widget_focado.tk_focusNext().focus()
+    janela.bind_all("<Return>", avancar_tabelas_global)
+
 # ==========================================
 # TELA DE LOGIN
 # ==========================================
@@ -88,7 +110,7 @@ def mostrar_menu_principal(aba_selecionada_indice=0):
     frame_feed.pack(side="top", fill="x")
     frame_feed.pack_propagate(False)
 
-    tk.Label(frame_feed, text="📢 FEED:", bg="#112233", fg="#FFD966", font=("Arial", 10, "bold")).pack(side="left", padx=(12, 6))
+    tk.Label(frame_feed, text="📢 AVISOS DA OFICINA:", bg="#112233", fg="#FFD966", font=("Arial", 10, "bold")).pack(side="left", padx=(12, 6))
     canvas_ticker = tk.Canvas(frame_feed, bg="#112233", highlightthickness=0, height=38)
     canvas_ticker.pack(side="left", fill="both", expand=True)
 
@@ -107,7 +129,7 @@ def mostrar_menu_principal(aba_selecionada_indice=0):
             pass
 
     if not avisos: 
-        avisos = ["[sistema]: Nenhum aviso cadastrado."]
+        avisos = ["Sistema funcionando corretamente! ^^"]  # Nenhum aviso disponível
 
     estado_ticker = {"indice_atual": 0, "pos_x": 950, "texto_ativo": avisos[0]}
     texto_item_id = canvas_ticker.create_text(950, 19, text=estado_ticker["texto_ativo"], fill="#00FFCC", font=("Arial", 10, "bold"), anchor="w")
@@ -138,54 +160,59 @@ def mostrar_menu_principal(aba_selecionada_indice=0):
     notebook = ttk.Notebook(janela_principal)
     notebook.pack(fill="both", expand=True, padx=15, pady=15)
 
-    # 0. ABA DE EMISSÃO NF-E (Índice 0)
+    '''# 0. ABA DE EMISSÃO NF-E (Índice 0)
     tab_nf = ttk.Frame(notebook)
     notebook.add(tab_nf, text="  📄 Emissão NF-E  ")
     f_adm = tk.Frame(tab_nf, padx=40, pady=20)
     f_adm.place(relx=0.5, rely=0.5, anchor="center")
 
     tk.Button(f_adm, text="📄 Emitir Nota Fiscal Eletrônica", command=lambda: modulo_nfe.mostrar_tela_emissao_nfe(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(0)), bg="#1F4E79", fg="white", font=("Arial", 11, "bold"), height=2, width=45).pack(pady=(0, 10))
-
-    # 1. ABA DE GESTÃO DE EQUIPAMENTOS (Índice 1)
+    '''
+    # 1. ABA DE OPERAÇÕES DA OFICINA
     tab_op = ttk.Frame(notebook)
-    notebook.add(tab_op, text="  📦 Gestão de Equipamentos  ")
+    notebook.add(tab_op, text="  🔧 Oficina  ")
     f_op = tk.Frame(tab_op, padx=40, pady=20)
     f_op.place(relx=0.5, rely=0.5, anchor="center")
 
-    tk.Button(f_op, text="📦 Armazém (Visão Geral do Estoque)", command=lambda: modulo_operacoes.mostrar_tela_armazem(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(1)), bg="#134F5C", fg="white", font=("Arial", 10, "bold"), height=2, width=42).pack(pady=(0, 6))
-    tk.Button(f_op, text="📥 Registrar Entrada / Ordem de Compra", command=lambda: modulo_operacoes.mostrar_tela_entrada(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(1)), bg="#38761D", fg="white", font=("Arial", 10, "bold"), height=2, width=42).pack(pady=(0, 6))
-    tk.Button(f_op, text="📤 Registrar Saída de Equipamento", command=lambda: modulo_operacoes.mostrar_tela_saida(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(1)), bg="#2F5597", fg="white", font=("Arial", 10, "bold"), height=2, width=42).pack(pady=(0, 6))
-    tk.Button(f_op, text="🔄 Estornar Saída", command=lambda: modulo_operacoes.mostrar_tela_estorno(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(1)), bg="#1F4E79", fg="white", font=("Arial", 10, "bold"), height=2, width=42).pack()
+    tk.Button(f_op, text="📦 Estoque de Peças e Materiais", command=lambda: modulo_operacoes.mostrar_tela_armazem(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(0)), bg="#134F5C", fg="white", font=("Arial", 10, "bold"), height=2, width=42).pack(pady=(0, 6))
+
+    tk.Button(f_op, text="📥 Registrar compra e entrada de peças", command=lambda: modulo_operacoes.mostrar_tela_entrada(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(0)), bg="#38761D", fg="white", font=("Arial", 10, "bold"), height=2, width=42).pack(pady=(0, 6))
+    
+    tk.Button(f_op, text="🛠️ Abrir ordem de serviço", command=lambda: modulo_operacoes.mostrar_tela_saida(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(0)), bg="#2F5597", fg="white", font=("Arial", 10, "bold"), height=2, width=42).pack(pady=(0, 6))
+
+    tk.Button(f_op, text="🔄 Devoluções e estornos", command=lambda: modulo_operacoes.mostrar_tela_estorno(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(0)), bg="#1F4E79", fg="white", font=("Arial", 10, "bold"), height=2, width=42).pack()
     
     # 2. ABA CADASTROS (Índice 2)
     tab_fin = ttk.Frame(notebook)
-    notebook.add(tab_fin, text="  📝 Cadastros  ")
+    notebook.add(tab_fin, text="  👥 Cadastros  ")
     f_fin = tk.Frame(tab_fin, padx=40, pady=20)
     f_fin.place(relx=0.5, rely=0.5, anchor="center")
     
-    tk.Button(f_fin, text="📦 Cadastro Central de Equipamentos", command=lambda: modulo_financeiro.mostrar_tela_fornecedores(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(2)), bg="#134F5C", fg="white", font=("Arial", 11, "bold"), height=2, width=45).pack(pady=(0, 10))
-    tk.Button(f_fin, text="👥 Cadastro Central de Clientes", command=lambda: modulo_financeiro.mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(2)), bg="#1F4E79", fg="white", font=("Arial", 11, "bold"), height=2, width=45).pack(pady=(0, 10))
-    tk.Button(f_fin, text="👨‍🔧 Cadastro Central de Técnicos", command=lambda: modulo_financeiro.mostrar_tela_tecnicos(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(2)), bg="#375623", fg="white", font=("Arial", 11, "bold"), height=2, width=45).pack(pady=(0, 10))
+    tk.Button(f_fin, text="🔩 Cadastro de peças e serviços", command=lambda: modulo_financeiro.mostrar_tela_fornecedores(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(1)), bg="#134F5C", fg="white", font=("Arial", 11, "bold"), height=2, width=45).pack(pady=(0, 10))
+
+    tk.Button(f_fin, text="👥 Clientes e veículos", command=lambda: modulo_financeiro.mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(1)), bg="#1F4E79", fg="white", font=("Arial", 11, "bold"), height=2, width=45).pack(pady=(0, 10))
+
+    tk.Button(f_fin, text="👨‍🔧 Mecânicos e técnicos", command=lambda: modulo_financeiro.mostrar_tela_tecnicos(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(1)), bg="#375623", fg="white", font=("Arial", 11, "bold"), height=2, width=45).pack(pady=(0, 10))
 
     # 3. ABA RELATÓRIOS & DASHBOARD (Índice 3)
     tab_rel = ttk.Frame(notebook)
-    notebook.add(tab_rel, text="  📊 Relatórios & Dashboard  ")
+    notebook.add(tab_rel, text="  📊 Gestão e relatórios  ")
     f_rel = tk.Frame(tab_rel, padx=40, pady=15)
     f_rel.place(relx=0.5, rely=0.5, anchor="center")
     
-    tk.Button(f_rel, text="📊 Histórico Movimentações", command=lambda: modulo_financeiro.mostrar_tela_historico_movimentacoes(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(3)), bg="#1F4E79", fg="white", font=("Arial", 10, "bold"), height=2, width=45).pack(pady=(0, 6))
-    tk.Button(f_rel, text="📈 Dashboard", command=lambda: modulo_relatorios.mostrar_tela_dashboard(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(3)), bg="#7030A0", fg="white", font=("Arial", 10, "bold"), height=2, width=45).pack(pady=(0, 6))
-    tk.Button(f_rel, text="🔍 Gerar Relatório de Atendimentos", command=lambda: modulo_relatorios.mostrar_tela_previa_relatorio(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(3)), bg="#38761D", fg="white", font=("Arial", 10, "bold"), height=2, width=45).pack(pady=(0, 6))
-    tk.Button(f_rel, text="💰 Indicadores Financeiros de Compras", command=lambda: modulo_relatorios.mostrar_tela_relatorio_financeiro(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(3)), bg="#274E13", fg="white", font=("Arial", 10, "bold"), height=2, width=45).pack()
+    tk.Button(f_rel, text="📋 Histórico de movimentações", command=lambda: modulo_financeiro.mostrar_tela_historico_movimentacoes(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(2)), bg="#1F4E79", fg="white", font=("Arial", 10, "bold"), height=2, width=45).pack(pady=(0, 6))
+    tk.Button(f_rel, text="📈 Dashboard", command=lambda: modulo_relatorios.mostrar_tela_dashboard(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(2)), bg="#7030A0", fg="white", font=("Arial", 10, "bold"), height=2, width=45).pack(pady=(0, 6))
+    tk.Button(f_rel, text="🔍 Relatório de serviços e ordens", command=lambda: modulo_relatorios.mostrar_tela_previa_relatorio(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(2)), bg="#38761D", fg="white", font=("Arial", 10, "bold"), height=2, width=45).pack(pady=(0, 6))
+    tk.Button(f_rel, text="💰 Custos de peças e serviços", command=lambda: modulo_relatorios.mostrar_tela_relatorio_financeiro(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(2)), bg="#274E13", fg="white", font=("Arial", 10, "bold"), height=2, width=45).pack()
 
     # 4. ABA ADMIN (Índice 4)
     tab_adm = ttk.Frame(notebook)
-    notebook.add(tab_adm, text="  ⚙️ Administração & Feed  ")
+    notebook.add(tab_adm, text="  ⚙️ Administração  ")
     f_adm = tk.Frame(tab_adm, padx=40, pady=20)
     f_adm.place(relx=0.5, rely=0.5, anchor="center")
     
-    tk.Button(f_adm, text="📢 Feed de Notícias", command=lambda: modulo_admin.mostrar_tela_gerenciar_feed(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(4)), bg="#333333", fg="white", font=("Arial", 11, "bold"), height=2, width=45).pack(pady=(0, 10))
-    tk.Button(f_adm, text="⚙️ Configurações do Sistema", command=lambda: modulo_admin.mostrar_tela_configuracoes(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(4)), bg="#1F4E79", fg="white", font=("Arial", 11, "bold"), height=2, width=45).pack(pady=(0, 10))
+    tk.Button(f_adm, text="📢 Feed de Notícias", command=lambda: modulo_admin.mostrar_tela_gerenciar_feed(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(3)), bg="#333333", fg="white", font=("Arial", 11, "bold"), height=2, width=45).pack(pady=(0, 10))
+    tk.Button(f_adm, text="⚙️ Configurações do Sistema", command=lambda: modulo_admin.mostrar_tela_configuracoes(janela_principal, limpar_tela, centralizar_janela, lambda: mostrar_menu_principal(3)), bg="#1F4E79", fg="white", font=("Arial", 11, "bold"), height=2, width=45).pack(pady=(0, 10))
     
     # Seleciona e foca na aba correta ao retornar
     try:
@@ -197,8 +224,12 @@ def mostrar_menu_principal(aba_selecionada_indice=0):
 # INICIALIZAÇÃO
 # ==========================================
 janela_principal = tk.Tk()
-janela_principal.title("Portland - Sistema de Gestão (Nuvem)")
+janela_principal.title("Mayer's Cartch - Gestão de Oficina")
 janela_principal.resizable(False, False)
+
+# Ativa o atalho ESC universal em todas as tabelas do sistema
+configurar_atalho_esc_global(janela_principal)
+configurar_atalho_enter_global(janela_principal)
 
 config.realizar_backup_automatico()
 mostrar_tela_login()

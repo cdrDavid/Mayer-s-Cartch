@@ -9,62 +9,68 @@ import config
 # TELA 1: HISTÓRICO DE MOVIMENTAÇÕES (SUPABASE)
 # ==========================================
 def mostrar_tela_historico_movimentacoes(janela_principal, limpar_tela, centralizar_janela, voltar_menu_callback):
-    """Tela Separada de Histórico Detalhado de Movimentações via Supabase"""
+    """Tela Separada de Histórico Detalhado de Movimentações, Logs e Auditoria via Supabase"""
     limpar_tela(janela_principal)
     centralizar_janela(janela_principal, config.LARGURA_PADRAO, config.ALTURA_PADRAO)
 
-    frame_principal = tk.Frame(janela_principal, padx=15, pady=15)
+    frame_principal = tk.Frame(janela_principal, padx=15, pady=10)
     frame_principal.pack(fill="both", expand=True)
 
-    tk.Label(frame_principal, text="📊 Histórico de Movimentações (Nuvem)", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 10))
+    tk.Label(frame_principal, text="📊 Histórico da oficina e auditoria", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 6))
 
-    f_filtros = tk.LabelFrame(frame_principal, text=" Filtros de Pesquisa ", font=("Arial", 9, "bold"), padx=10, pady=8)
-    f_filtros.pack(fill="x", pady=(0, 10))
+    # --- FILTROS DE PESQUISA ---
+    f_filtros = tk.LabelFrame(frame_principal, text=" Filtros de Pesquisa ", font=("Arial", 9, "bold"), padx=10, pady=6)
+    f_filtros.pack(fill="x", pady=(0, 6))
 
     f_l_filtro = tk.Frame(f_filtros)
     f_l_filtro.pack(fill="x", pady=2)
 
-    tk.Label(f_l_filtro, text="Tipo:", font=("Arial", 9)).pack(side="left", padx=(0, 2))
-    combo_filtro_tipo = ttk.Combobox(f_l_filtro, values=["Todos", "Entrada", "Saída", "Atualização"], width=14, state="readonly")
+    tk.Label(f_l_filtro, text="Tipo:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
+    combo_filtro_tipo = ttk.Combobox(f_l_filtro, values=["Todos", "Entrada", "Saída", "Atualização / Log"], width=16, state="readonly")
     combo_filtro_tipo.set("Todos")
     combo_filtro_tipo.pack(side="left", padx=(0, 15))
 
-    tk.Label(f_l_filtro, text="Busca Geral:", font=("Arial", 9)).pack(side="left", padx=(0, 2))
-    entry_filtro_busca = tk.Entry(f_l_filtro, font=("Arial", 9), width=22)
+    tk.Label(f_l_filtro, text="Busca Geral:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
+    entry_filtro_busca = tk.Entry(f_l_filtro, font=("Arial", 9), width=25)
     entry_filtro_busca.pack(side="left", padx=(0, 15))
 
+    # --- TABELA DE MOVIMENTAÇÕES ---
     frame_tabela_mov = tk.Frame(frame_principal)
-    frame_tabela_mov.pack(fill="both", expand=True, pady=(0, 10))
+    frame_tabela_mov.pack(fill="both", expand=True, pady=(0, 6))
 
-    colunas_mov = ("Tipo", "Data", "Nº Conta / Cliente", "Descrição do Log", "Item", "Quantidade", "Usuário")
-    tabela_mov = ttk.Treeview(frame_tabela_mov, columns=colunas_mov, show="headings", height=13)
+    colunas_mov = ("ID_Oculto", "Tipo", "Data", "Nº Conta / Cliente", "Resumo da Descrição", "Item", "Quantidade", "Usuário")
+    tabela_mov = ttk.Treeview(frame_tabela_mov, columns=colunas_mov, show="headings", height=8)
     
-    for col, txt in zip(colunas_mov, colunas_mov):
-        tabela_mov.heading(col, text=txt)
-    
-    tabela_mov.column("Tipo", width=100, minwidth=90, anchor="center", stretch=True)
-    tabela_mov.column("Data", width=130, minwidth=120, anchor="center", stretch=True)
-    tabela_mov.column("Nº Conta / Cliente", width=130, minwidth=110, anchor="center", stretch=True)
-    tabela_mov.column("Descrição do Log", width=350, minwidth=200, anchor="w", stretch=True)
-    tabela_mov.column("Item", width=140, minwidth=100, anchor="w", stretch=True)
-    tabela_mov.column("Quantidade", width=80, minwidth=70, anchor="center", stretch=True)
-    tabela_mov.column("Usuário", width=90, minwidth=80, anchor="center", stretch=True)
+    tabela_mov.heading("ID_Oculto", text="ID"); tabela_mov.column("ID_Oculto", width=0, stretch=False)
+    tabela_mov.heading("Tipo", text="Tipo"); tabela_mov.column("Tipo", width=110, anchor="center")
+    tabela_mov.heading("Data", text="Data / Hora"); tabela_mov.column("Data", width=130, anchor="center")
+    tabela_mov.heading("Nº Conta / Cliente", text="Nº Conta / Cliente"); tabela_mov.column("Nº Conta / Cliente", width=140, anchor="center")
+    tabela_mov.heading("Resumo da Descrição", text="Resumo da Descrição / Ação"); tabela_mov.column("Resumo da Descrição", width=420, anchor="w")
+    tabela_mov.heading("Item", text="Item"); tabela_mov.column("Item", width=150, anchor="w")
+    tabela_mov.heading("Quantidade", text="Qtd"); tabela_mov.column("Quantidade", width=65, anchor="center")
+    tabela_mov.heading("Usuário", text="Usuário"); tabela_mov.column("Usuário", width=110, anchor="center")
 
     scrollbar_mov_y = ttk.Scrollbar(frame_tabela_mov, orient="vertical", command=tabela_mov.yview)
-    scrollbar_mov_x = ttk.Scrollbar(frame_tabela_mov, orient="horizontal", command=tabela_mov.xview)
-    tabela_mov.configure(yscrollcommand=scrollbar_mov_y.set, xscrollcommand=scrollbar_mov_x.set)
+    tabela_mov.configure(yscrollcommand=scrollbar_mov_y.set)
+    tabela_mov.pack(side="left", fill="both", expand=True)
+    scrollbar_mov_y.pack(side="right", fill="y")
 
-    tabela_mov.grid(row=0, column=0, sticky="nsew")
-    scrollbar_mov_y.grid(row=0, column=1, sticky="ns")
-    scrollbar_mov_x.grid(row=1, column=0, sticky="ew")
+    # --- PAINEL INFERIOR DE DETALHES (Expansível / Ocultável com ESC) ---
+    f_detalhes_mov = tk.LabelFrame(frame_principal, text=" Detalhes Completos da Movimentação / Log (Pressione ESC para ocultar) ", font=("Arial", 9, "bold"), padx=10, pady=6)
+    f_detalhes_mov.pack(fill="x", pady=(0, 6))
 
-    frame_tabela_mov.grid_rowconfigure(0, weight=1)
-    frame_tabela_mov.grid_columnconfigure(0, weight=1)
+    text_detalhes_mov = tk.Text(f_detalhes_mov, font=("Arial", 9), height=4, wrap="word", bg="#F4F4F4")
+    text_detalhes_mov.pack(fill="x", expand=True)
+    text_detalhes_mov.config(state="disabled")
 
     def carregar_movimentacoes(filtro_tipo="Todos", termo=""):
         for i in tabela_mov.get_children():
             tabela_mov.delete(i)
         
+        text_detalhes_mov.config(state="normal")
+        text_detalhes_mov.delete("1.0", tk.END)
+        text_detalhes_mov.config(state="disabled")
+
         registros_lidos = []
         conn = config.obter_conexao_banco()
         if not conn:
@@ -73,54 +79,92 @@ def mostrar_tela_historico_movimentacoes(janela_principal, limpar_tela, centrali
         try:
             cursor = conn.cursor()
 
-            # 1. Entradas
+            # 1. Entradas (OC)
             if filtro_tipo in ["Todos", "Entrada"]:
-                cursor.execute("SELECT data, fornecedor_descricao, nome_item, quantidade, usuario FROM entrada;")
-                for data, desc, tipo_item, qtd, user in cursor.fetchall():
+                cursor.execute("SELECT id, data, fornecedor_descricao, nome_item, quantidade, usuario, status FROM entrada;")
+                for row_id, data, desc, tipo_item, qtd, user, status in cursor.fetchall():
                     if data:
-                        txt_geral = f"{desc} {tipo_item} {user}".lower()
+                        txt_geral = f"{desc} {tipo_item} {user} {status}".lower()
                         if termo and termo.lower() not in txt_geral: 
                             continue
                         conta_cliente = str(desc).split(":")[-1].strip() if "Ordem de Compra:" in str(desc) else "Fornecedor / Geral"
-                        registros_lidos.append(("Entrada", str(data), conta_cliente, desc or "-", tipo_item or "-", qtd or 0, user or "-"))
+                        resumo = f"Entrada de mercadoria ({tipo_item})"
+                        detalhe_completo = f"ID: {row_id} | Data: {data}\nFornecedor / Descrição: {desc}\nItem: {tipo_item} | Quantidade: {qtd}\nStatus: {status}\nRegistrado por: {user}"
+                        registros_lidos.append((f"ENT-{row_id}", "Entrada", str(data), conta_cliente, resumo, tipo_item or "-", qtd or 0, user or "-", detalhe_completo))
 
-            # 2. Uso / Saídas
+            # 2. Uso / Saídas (OS)
             if filtro_tipo in ["Todos", "Saída"]:
-                cursor.execute("SELECT data, local_setor, nome_equipamento, quantidade_usada, observacao, usuario FROM uso;")
-                for data, setor, tipo_item, qtd, obs, user in cursor.fetchall():
+                cursor.execute("SELECT id, data, local_setor, nome_equipamento, quantidade_usada, observacao, usuario, status FROM uso;")
+                for row_id, data, setor, tipo_item, qtd, obs, user, status in cursor.fetchall():
                     if data:
-                        txt_geral = f"{setor} {tipo_item} {obs} {user}".lower()
+                        txt_geral = f"{setor} {tipo_item} {obs} {user} {status}".lower()
                         if termo and termo.lower() not in txt_geral: 
                             continue
                         conta_cliente = setor or "Desconhecido"
-                        if "OS:" in str(obs):
+                        num_os = "OS-N/D"
+                        if obs and "OS:" in str(obs):
                             for parte in str(obs).split("|"):
                                 if "OS:" in parte: 
-                                    conta_cliente = parte.split(":")[-1].strip()
+                                    num_os = parte.split(":")[-1].strip()
                                     break
-                        registros_lidos.append(("Saída", str(data), conta_cliente, obs or "-", tipo_item or "-", qtd or 0, user or "-"))
+                        resumo = f"Ordem de Serviço ({num_os}) — Status: {status}"
+                        detalhe_completo = f"ID: {row_id} | Data: {data} | Nº OS: {num_os}\nCliente / Setor: {setor}\nStatus Atual: {status}\nRegistrado por: {user}\n\nDetalhes e Serviços:\n{obs}"
+                        registros_lidos.append((f"SAI-{row_id}", "Saída", str(data), conta_cliente, resumo, tipo_item or "-", qtd or 0, user or "-", detalhe_completo))
 
-            # 3. Atualizações / Logs
-            if filtro_tipo in ["Todos", "Atualização"]:
-                cursor.execute("SELECT data, num_conta, descricao_log, item, quantidade, usuario FROM atualizacoes;")
-                for data, conta, desc_log, item, qtd, user in cursor.fetchall():
+            # 3. Atualizações / Logs / Alterações / Cancelamentos / Estornos
+            if filtro_tipo in ["Todos", "Atualização / Log"]:
+                cursor.execute("SELECT id, data, num_conta, descricao_log, item, quantidade, usuario FROM atualizacoes;")
+                for row_id, data, conta, desc_log, item, qtd, user in cursor.fetchall():
                     if data:
                         txt_geral = f"{conta} {desc_log} {item} {user}".lower()
                         if termo and termo.lower() not in txt_geral: 
                             continue
-                        registros_lidos.append(("Atualização", str(data), conta or "-", desc_log or "-", item or "-", qtd or 0, user or "-"))
+                        
+                        # Cria um resumo amigável com base no log
+                        resumo_log = str(desc_log)
+                        if "|" in resumo_log:
+                            resumo_log = resumo_log.split("|")[0].strip()
+
+                        detalhe_completo = f"ID Log: {row_id} | Data / Hora: {data}\nConta / Referência: {conta}\nUsuário Responsável: {user}\n\nDescrição Detalhada:\n{desc_log}"
+                        registros_lidos.append((f"LOG-{row_id}", "Atualização / Log", str(data), conta or "-", resumo_log, item or "-", qtd or "-", user or "-", detalhe_completo))
 
             cursor.close()
             conn.close()
 
-            # Insere direto na tabela (já ordenadas ou em lote)
-            for reg in registros_lidos:
-                tabela_mov.insert("", "end", values=reg)
+            # Ordena do mais recente para o mais antigo baseando-se no ID (maior ID = mais recente inserido)
+            registros_ordenados = sorted(registros_lidos, key=lambda x: str(x[0]), reverse=True)
+
+            for reg in registros_ordenados:
+                # Insere excluindo o último elemento (que é o detalhe completo guardado nas tags)
+                tabela_mov.insert("", "end", values=reg[:-1], tags=(reg[-1],))
 
         except Exception as e:
-            print("Erro ao carregar movimentações do Supabase:", e)
+            print("Erro ao carregar histórico unificado do Supabase:", e)
 
     carregar_movimentacoes()
+
+    def ao_clicar_linha_movimentacao(event):
+        selecao = tabela_mov.selection()
+        if selecao:
+            item_dados = tabela_mov.item(selecao[0])
+            tags = item_dados.get("tags")
+            if tags:
+                detalhe_texto = tags[0]
+                text_detalhes_mov.config(state="normal")
+                text_detalhes_mov.delete("1.0", tk.END)
+                text_detalhes_mov.insert("1.0", detalhe_texto)
+                text_detalhes_mov.config(state="disabled")
+
+    tabela_mov.bind("<<TreeviewSelect>>", ao_clicar_linha_movimentacao)
+
+    def ocultar_detalhes_com_esc(event):
+        """Oculta o painel de detalhes ao pressionar a tecla ESC"""
+        text_detalhes_mov.config(state="normal")
+        text_detalhes_mov.delete("1.0", tk.END)
+        text_detalhes_mov.config(state="disabled")
+        tabela_mov.selection_remove(tabela_mov.selection())
+
+    janela_principal.bind("<Escape>", ocultar_detalhes_com_esc)
 
     def aplicar_filtros():
         carregar_movimentacoes(combo_filtro_tipo.get(), entry_filtro_busca.get().strip())
@@ -131,11 +175,11 @@ def mostrar_tela_historico_movimentacoes(janela_principal, limpar_tela, centrali
         carregar_movimentacoes()
 
     f_botoes_filtro = tk.Frame(frame_principal)
-    f_botoes_filtro.pack(fill="x", pady=(0, 10))
-    tk.Button(f_botoes_filtro, text="🔍 Aplicar Filtros", command=aplicar_filtros, bg="#1F4E79", fg="white", font=("Arial", 9, "bold"), width=16).pack(side="left", padx=(0, 10))
-    tk.Button(f_botoes_filtro, text="🧹 Limpar", command=limpar_filtros, bg="#595959", fg="white", font=("Arial", 9), width=10).pack(side="left")
+    f_botoes_filtro.pack(fill="x", pady=(2, 4))
+    tk.Button(f_botoes_filtro, text="🔍 Aplicar Filtros", command=aplicar_filtros, bg="#1F4E79", fg="white", font=("Arial", 9, "bold"), height=2).pack(side="left", fill="x", expand=True, padx=(0, 4))
+    tk.Button(f_botoes_filtro, text="🧹 Limpar", command=limpar_filtros, bg="#595959", fg="white", font=("Arial", 9, "bold"), height=2).pack(side="left", fill="x", expand=True, padx=(0, 4))
 
-    tk.Button(frame_principal, text="⬅ Voltar ao Menu", command=voltar_menu_callback, bg="#595959", fg="white", font=("Arial", 10), height=1).pack(fill="x")
+    tk.Button(frame_principal, text="⬅ Voltar ao Menu", command=voltar_menu_callback, bg="#595959", fg="white", font=("Arial", 9), height=1).pack(fill="x", pady=(2, 0))
 
 
 # ==========================================
@@ -149,31 +193,33 @@ def mostrar_tela_fornecedores(janela_principal, limpar_tela, centralizar_janela,
     frame_principal = tk.Frame(janela_principal, padx=20, pady=15)
     frame_principal.pack(fill="both", expand=True)
 
-    tk.Label(frame_principal, text="📦 Cadastro Central de Equipamentos e Produtos (Nuvem)", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 10))
+    tk.Label(frame_principal, text="🔩 Cadastro de peças e serviços", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 10))
 
-    f_form = tk.LabelFrame(frame_principal, text=" Dados do Produto / Equipamento ", font=("Arial", 9, "bold"), padx=15, pady=10)
+    f_form = tk.LabelFrame(frame_principal, text=" Dados da peça ou serviço ", font=("Arial", 9, "bold"), padx=15, pady=10)
     f_form.pack(fill="x", pady=(0, 10))
 
     f_l1 = tk.Frame(f_form)
     f_l1.pack(fill="x", pady=(0, 8))
 
-    tk.Label(f_l1, text="Cód. do Produto:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 4))
+    tk.Label(f_l1, text="Código:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 4))
     entry_cod = tk.Entry(f_l1, font=("Arial", 10), width=15)
     entry_cod.pack(side="left", padx=(0, 20))
 
     tk.Label(f_l1, text="Nome do Produto:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 4))
-    entry_nome = tk.Entry(f_l1, font=("Arial", 10), width=28)
+    entry_nome = tk.Entry(f_l1, font=("Arial", 10), width=45)
     entry_nome.pack(side="left", padx=(0, 20))
 
     tk.Label(f_l1, text="Valor Unit. (R$):", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 4))
     entry_valor = tk.Entry(f_l1, font=("Arial", 10), width=12)
     entry_valor.pack(side="left")
-
+    
+    '''
     f_l2 = tk.Frame(f_form)
     f_l2.pack(fill="x")
+    '''
 
-    tk.Label(f_l2, text="Fornecedor:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 4))
-    entry_forn = tk.Entry(f_l2, font=("Arial", 10), width=35)
+    tk.Label(f_l1, text="Fornecedor:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 4))
+    entry_forn = tk.Entry(f_l1, font=("Arial", 10), width=35)
     entry_forn.pack(side="left", padx=(0, 20))
 
     frame_tabela = tk.Frame(frame_principal)
@@ -315,9 +361,6 @@ def mostrar_tela_fornecedores(janela_principal, limpar_tela, centralizar_janela,
 # ==========================================
 # TELA 3: CADASTRO CENTRAL DE CLIENTES (SUPABASE)
 # ==========================================
-# ==========================================
-# TELA 3: CADASTRO CENTRAL DE CLIENTES (SUPABASE)
-# ==========================================
 def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, voltar_menu_callback):
     """Tela de Cadastro e Gerenciamento Completo de Clientes via Supabase"""
     limpar_tela(janela_principal)
@@ -326,7 +369,7 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
     frame_principal = tk.Frame(janela_principal, padx=15, pady=10)
     frame_principal.pack(fill="both", expand=True)
 
-    tk.Label(frame_principal, text="👥 Cadastro Central de Clientes (Nuvem)", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 6))
+    tk.Label(frame_principal, text="👥 Clientes e veículos", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 6))
 
     # --- BLOCO 1: DADOS CADASTRAIS DO CLIENTE ---
     f_form = tk.LabelFrame(frame_principal, text=" 📋 Dados Cadastrais do Cliente ", font=("Arial", 9, "bold"), padx=12, pady=8)
@@ -344,8 +387,8 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
     entry_nome_cli.pack(side="left", padx=(0, 10))
 
     tk.Label(f_l1, text="Tipo:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
-    combo_tipo_cli = ttk.Combobox(f_l1, values=["Particular", "Prefeitura"], width=11, state="readonly")
-    combo_tipo_cli.set("Particular")
+    combo_tipo_cli = ttk.Combobox(f_l1, values=["P.Fisica", "P.Juridica"], width=11, state="readonly")
+    combo_tipo_cli.set("P.Fisica")
     combo_tipo_cli.pack(side="left", padx=(0, 10))
 
     tk.Label(f_l1, text="CNPJ/CPF:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
@@ -393,49 +436,165 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
 
 
     # --- BLOCO 2: DADOS TÉCNICOS / EQUIPAMENTO & LINHA ---
-    f_tec = tk.LabelFrame(frame_principal, text=" ⚙️ Informações Técnicas / Equipamento & Linha ", font=("Arial", 9, "bold"), padx=12, pady=8)
+    f_tec = tk.LabelFrame(frame_principal, text=" 🚗 Dados do veículo ", font=("Arial", 9, "bold"), padx=12, pady=8)
     f_tec.pack(fill="x", pady=(0, 8))
 
     f_t1 = tk.Frame(f_tec)
     f_t1.pack(fill="x", pady=(0, 4))
 
-    tk.Label(f_t1, text="Mod. Central:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
-    entry_modelo_central = tk.Entry(f_t1, font=("Arial", 9), width=18)
-    entry_modelo_central.pack(side="left", padx=(0, 15))
+    marcas_modelos = {
+        "Chevrolet": ["Onix", "Cruze", "Tracker", "S10", "Spin", "Montana", "Equinox", "Corsa", "Outros"],
+        "Ford": ["Ka", "Fiesta", "Focus", "EcoSport", "Ranger", "Territory", "Outros"],
+        "Toyota": ["Corolla", "Hilux", "Yaris", "RAV4", "SW4", "Outros"],
+        "Honda": ["Civic", "Fit", "HR-V", "CR-V", "City", "Outros"],
+        "Volkswagen": ["Gol", "Golf", "Polo", "T-Cross", "Virtus", "Saveiro", "Outros"],
+        "Nissan": ["March", "Versa", "Kicks", "Frontier", "Sentra", "Outros"],
+        "Hyundai": ["HB20", "Creta", "ix35", "Tucson", "Santa Fe", "Outros"],
+        "Kia": ["Picanto", "Cerato", "Sportage", "Sorento", "Outros"],
+        "Renault": ["Kwid", "Sandero", "Logan", "Duster", "Master", "Outros"],
+        "Peugeot": ["208", "2008", "3008", "Partner", "Outros"],
+        "Fiat": ["Uno", "Argo", "Mobi", "Strada", "Toro", "Fiorino", "Outros"],
+        "Jeep": ["Renegade", "Compass", "Commander", "Wrangler", "Outros"],
+        "Mitsubishi": ["Lancer", "ASX", "Outlander", "Pajero", "L200", "Outros"],
+        "Suzuki": ["Jimny", "Vitara", "S-Cross", "Outros"],
+        "Mazda": ["Mazda 2", "Mazda 3", "CX-3", "CX-5", "Outros"],
+        "Outras": ["Outros"]
+    }
 
-    tk.Label(f_t1, text="Módulo:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
-    entry_modulo = tk.Entry(f_t1, font=("Arial", 9), width=18)
-    entry_modulo.pack(side="left", padx=(0, 15))
+    tk.Label(f_t1, text="Marca do Carro:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
+    combo_tipo_carro = ttk.Combobox(f_t1, values=list(marcas_modelos), width=12, state="readonly")
+    combo_tipo_carro.set("Selecione")
+    combo_tipo_carro.pack(side="left", padx=(0, 15))
+    
+    tk.Label(f_t1, text="Linha:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
+    combo_linha = ttk.Combobox(f_t1, values=["Selecione"], width=12, state="readonly")
+    combo_linha.set("Selecione")
+    combo_linha.pack(side="left", padx=(0, 15))
 
-    tk.Label(f_t1, text="Mac Address:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
-    entry_mac = tk.Entry(f_t1, font=("Arial", 9), width=22)
-    entry_mac.pack(side="left")
+    def atualizar_linhas(event=None):
+        marca = combo_tipo_carro.get()
+        opcoes = marcas_modelos.get(marca, ["Outros"])
+        combo_linha.configure(values=opcoes)
+        combo_linha.set("Selecione")
 
-    f_t2 = tk.Frame(f_tec)
-    f_t2.pack(fill="x", pady=(0, 2))
+    combo_tipo_carro.bind("<<ComboboxSelected>>", atualizar_linhas)
 
-    tk.Label(f_t2, text="Operadora:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
-    combo_operadora = ttk.Combobox(f_t2, values=["Vivo", "Claro", "Outra"], width=12, state="readonly")
-    combo_operadora.pack(side="left", padx=(0, 15))
+    tk.Label(f_t1, text="Modelo:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
+    combo_modelo = ttk.Combobox(f_t1, values=["Sedan", "Hatch", "SUV", "Pickup", "Coupe", "Convertible", "Minivan", "Outros"], width=12, state="readonly")
+    combo_modelo.set("Selecione")
+    combo_modelo.pack(side="left", padx=(0, 15))
 
-    tk.Label(f_t2, text="Linha / Nº:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
-    entry_linha = tk.Entry(f_t2, font=("Arial", 9), width=18)
-    entry_linha.pack(side="left", padx=(0, 15))
+    tk.Label(f_t1, text="Ano:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
+    combo_ano = ttk.Combobox(f_t1, values=[str(year) for year in range(1980, 2031)], width=8, state="readonly")
+    combo_ano.set("Selecione")
+    combo_ano.pack(side="left")
 
-    tk.Label(f_t2, text="ICCID:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
-    entry_iccid = tk.Entry(f_t2, font=("Arial", 9), width=28)
-    entry_iccid.pack(side="left")
+    tk.Label(f_t1, text="Tipo de Combustível:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
+    combo_combustivel = ttk.Combobox(f_t1, values=["Gasolina", "Etanol", "Diesel", "Elétrico", "Híbrido", "Outro"], width=12, state="readonly")
+    combo_combustivel.set("Selecione")
+    combo_combustivel.pack(side="left", padx=(0, 15))
+    
+    # --- ABAS / DIVISÃO INFERIOR ---
+    notebook_baixo = ttk.Notebook(frame_principal)
+    notebook_baixo.pack(fill="both", expand=True, pady=(0, 6))
+
+    # Aba 1: Clientes Cadastrados com Barra de Pesquisa Integrada no Topo
+    tab_cli_lista = ttk.Frame(notebook_baixo, padding=6)
+    notebook_baixo.add(tab_cli_lista, text=" 📋 Clientes Cadastrados ")
+
+    f_pesquisa_barra = tk.Frame(tab_cli_lista)
+    f_pesquisa_barra.pack(fill="x", pady=(0, 4))
+
+    tk.Label(f_pesquisa_barra, text="🔍 Pesquisar (digite e aperte Enter):", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 6))
+    entry_busca_geral = tk.Entry(f_pesquisa_barra, font=("Arial", 9), width=35)
+    entry_busca_geral.pack(side="left", padx=(0, 10))
+
+    def limpar_busca(event=None):
+        if not entry_busca_geral.get().strip():
+            carregar_clientes()
+
+    tk.Button(f_pesquisa_barra, text="🔄 Ver Todos", command=lambda: [entry_busca_geral.delete(0, tk.END), carregar_clientes()], bg="#595959", fg="white", font=("Arial", 8, "bold")).pack(side="left")
+
+    colunas_cli = ("Cod", "Nome", "Tipo", "CPF/ CNPJ", "Rua", "Nº", "Bairro", "Cidade", "Contato", "E-mail", "Atualização")
+    
+    frame_tabela_cli_container = tk.Frame(tab_cli_lista)
+    frame_tabela_cli_container.pack(fill="both", expand=True)
+
+    tabela_clientes = ttk.Treeview(frame_tabela_cli_container, columns=colunas_cli, show="headings", height=5)
+    
+    tabela_clientes.heading("Cod", text="Cód"); tabela_clientes.column("Cod", width=50, anchor="center")
+    tabela_clientes.heading("Nome", text="Nome / Razão Social"); tabela_clientes.column("Nome", width=160, anchor="w")
+    tabela_clientes.heading("Tipo", text="Tipo"); tabela_clientes.column("Tipo", width=75, anchor="center")
+    tabela_clientes.heading("CPF/ CNPJ", text="CPF/ CNPJ"); tabela_clientes.column("CPF/ CNPJ", width=120, anchor="center")
+    tabela_clientes.heading("Rua", text="Rua"); tabela_clientes.column("Rua", width=140, anchor="w")
+    tabela_clientes.heading("Nº", text="Nº"); tabela_clientes.column("Nº", width=45, anchor="center")
+    tabela_clientes.heading("Bairro", text="Bairro"); tabela_clientes.column("Bairro", width=100, anchor="w")
+    tabela_clientes.heading("Cidade", text="Cidade"); tabela_clientes.column("Cidade", width=100, anchor="w")
+    tabela_clientes.heading("Contato", text="Contato"); tabela_clientes.column("Contato", width=100, anchor="w")
+    tabela_clientes.heading("E-mail", text="E-mail"); tabela_clientes.column("E-mail", width=150, anchor="w")
+    tabela_clientes.heading("Atualização", text="Atualizado em"); tabela_clientes.column("Atualização", width=95, anchor="center")
+    
+    scrollbar_cli = ttk.Scrollbar(frame_tabela_cli_container, orient="vertical", command=tabela_clientes.yview)
+    tabela_clientes.configure(yscrollcommand=scrollbar_cli.set)
+    tabela_clientes.pack(side="top", fill="both", expand=True)
+    scrollbar_cli.pack(side="right", fill="y")
+
+    # Aba 2: Histórico de Atualizações (Dinâmica - Oculta por padrão)
+    tab_cli_hist = ttk.Frame(notebook_baixo)
+
+    colunas_hist = ("Data", "Descrição da Alteração / Motivo", "Usuário")
+    tabela_historico_alt = ttk.Treeview(tab_cli_hist, columns=colunas_hist, show="headings", height=6)
+    
+    tabela_historico_alt.heading("Data", text="Data / Hora"); tabela_historico_alt.column("Data", width=140, anchor="center")
+    tabela_historico_alt.heading("Descrição da Alteração / Motivo", text="Descrição da Alteração, Motivo & Detalhes"); tabela_historico_alt.column("Descrição da Alteração / Motivo", width=800, anchor="w")
+    tabela_historico_alt.heading("Usuário", text="Usuário"); tabela_historico_alt.column("Usuário", width=150, anchor="center")
+
+    scrollbar_hist = ttk.Scrollbar(tab_cli_hist, orient="vertical", command=tabela_historico_alt.yview)
+    tabela_historico_alt.configure(yscrollcommand=scrollbar_hist.set)
+    tabela_historico_alt.pack(side="left", fill="both", expand=True)
+    scrollbar_hist.pack(side="right", fill="y")
 
 
     # --- FUNÇÕES DE AUXÍLIO ---
+    def consultar_cep(event=None):
+        cep_limpo = "".join(filter(str.isdigit, entry_cep.get()))
+        if len(cep_limpo) != 8:
+            return
+        try:
+            import urllib.request
+            import json
+            url = f"https://viacep.com.br/ws/{cep_limpo}/json/"
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=3) as resposta:
+                dados = json.loads(resposta.read().decode())
+                if "erro" not in dados:
+                    entry_rua.delete(0, tk.END); entry_rua.insert(0, dados.get("logradouro", ""))
+                    entry_bairro.delete(0, tk.END); entry_bairro.insert(0, dados.get("bairro", ""))
+                    entry_cidade.delete(0, tk.END); entry_cidade.insert(0, dados.get("localidade", ""))
+                    entry_numero.focus()
+        except Exception as e:
+            print("Erro ao consultar CEP:", e)
+
+    entry_cep.bind("<Return>", consultar_cep)
+    entry_cep.bind("<FocusOut>", consultar_cep)
+
     def limpar_formulario():
-        """Esvazia todos os campos do formulário"""
-        for ent in [entry_cod_cli, entry_nome_cli, entry_doc_cli, entry_cep, entry_rua, entry_numero, entry_bairro, entry_cidade, entry_tel_cli, entry_email_cli, entry_modelo_central, entry_modulo, entry_mac, entry_linha, entry_iccid]:
+        for ent in [entry_cod_cli, entry_nome_cli, entry_doc_cli, entry_cep, entry_rua, entry_numero, entry_bairro, entry_cidade, entry_tel_cli, entry_email_cli]:
             ent.delete(0, tk.END)
         combo_tipo_cli.set('Particular')
-        combo_operadora.set('')
+        combo_tipo_carro.set('Selecione')
+        combo_linha.configure(values=['Selecione'])
+        combo_linha.set('Selecione')
+        combo_modelo.set('Selecione')
+        combo_ano.set('Selecione')
+        combo_combustivel.set('Selecione')
         entry_data_atl.delete(0, tk.END)
         entry_data_atl.insert(0, datetime.now().strftime("%d/%m/%Y"))
+        for item in tabela_historico_alt.get_children():
+            tabela_historico_alt.delete(item)
+        
+        if str(tab_cli_hist) in notebook_baixo.tabs():
+            notebook_baixo.forget(tab_cli_hist)
 
     def formatar_mac_address(texto):
         limpo = "".join(c for c in texto.upper() if c.isalnum())
@@ -448,9 +607,34 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
             return f"{digitos[:2]}/{digitos[2:4]}/{digitos[4:8]}"
         return texto
 
+    def carregar_historico_atualizacoes(cod_cliente):
+        for item in tabela_historico_alt.get_children():
+            tabela_historico_alt.delete(item)
+            
+        if not cod_cliente:
+            return
+
+        conn = config.obter_conexao_banco()
+        if not conn:
+            return
+        try:
+            cursor = conn.cursor()
+            cursor.execute("""SELECT data, descricao_log, usuario 
+                              FROM atualizacoes WHERE num_conta = %s ORDER BY id DESC;""", (str(cod_cliente),))
+            for row in cursor.fetchall():
+                data_reg, desc_reg, usuario_reg = row
+                tabela_historico_alt.insert("", "end", values=(
+                    data_reg or "-", desc_reg or "-", usuario_reg or "-"
+                ))
+            cursor.close()
+            conn.close()
+        except Exception as e:
+            print("Erro ao carregar histórico de atualizações:", e)
+
     def carregar_dados_por_codigo(event=None):
         cod_digitado = entry_cod_cli.get().strip()
         if not cod_digitado:
+            limpar_formulario()
             return
 
         conn = config.obter_conexao_banco()
@@ -476,58 +660,34 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
                 entry_cidade.delete(0, tk.END); entry_cidade.insert(0, res[8] or "")
                 entry_tel_cli.delete(0, tk.END); entry_tel_cli.insert(0, res[9] or "")
                 entry_email_cli.delete(0, tk.END); entry_email_cli.insert(0, res[10] or "")
-                entry_modelo_central.delete(0, tk.END); entry_modelo_central.insert(0, res[11] or "")
-                entry_modulo.delete(0, tk.END); entry_modulo.insert(0, res[12] or "")
-                entry_mac.delete(0, tk.END); entry_mac.insert(0, formatar_mac_address(res[13] or ""))
-                combo_operadora.set(res[14] if res[14] in ["Vivo", "Claro", "Outra"] else "")
-                entry_linha.delete(0, tk.END); entry_linha.insert(0, res[15] or "")
-                entry_iccid.delete(0, tk.END); entry_iccid.insert(0, res[16] or "")
+                marca = res[11] or "Selecione"
+                combo_tipo_carro.set(marca if marca in marcas_modelos else "Selecione")
+                atualizar_linhas()
+                linha = res[12] or "Selecione"
+                combo_linha.set(linha if linha in combo_linha['values'] else "Selecione")
+                modelo = res[13] or "Selecione"
+                combo_modelo.set(modelo if modelo in combo_modelo['values'] else "Selecione")
+                ano = res[14] or "Selecione"
+                combo_ano.set(ano if ano in combo_ano['values'] else "Selecione")
+                combustivel = res[15] or "Selecione"
+                combo_combustivel.set(combustivel if combustivel in combo_combustivel['values'] else "Selecione")
                 if res[17]:
                     entry_data_atl.delete(0, tk.END); entry_data_atl.insert(0, res[17])
+                
+                carregar_historico_atualizacoes(cod_digitado)
+                
+                if str(tab_cli_hist) not in notebook_baixo.tabs():
+                    notebook_baixo.add(tab_cli_hist, text=" 📜 Histórico de Atualizações do Cliente ")
+            else:
+                if str(tab_cli_hist) in notebook_baixo.tabs():
+                    notebook_baixo.forget(tab_cli_hist)
         except Exception as e:
             print("Erro ao buscar por código:", e)
 
-    entry_cod_cli.bind("<Return>", carregar_dados_por_codigo)   # Busca ao pressionar Enter
-    entry_cod_cli.bind("<FocusOut>", carregar_dados_por_codigo) # Busca ao clicar fora do campo
+    entry_cod_cli.bind("<Return>", carregar_dados_por_codigo)
+    entry_cod_cli.bind("<FocusOut>", carregar_dados_por_codigo)
 
-    # --- TABELA DE EXIBIÇÃO ---
-    frame_tabela_cli = tk.Frame(frame_principal)
-    frame_tabela_cli.pack(fill="both", expand=True, pady=(0, 6))
-
-    colunas_cli = ("Cod", "Nome", "Tipo", "Rua", "Nº", "Atualização", "Central", "Módulo", "Operadora", "Linha", "ICCID", "Mac")
-    tabela_clientes = ttk.Treeview(frame_tabela_cli, columns=colunas_cli, show="headings", height=8)
-    
-    tabela_clientes.heading("Cod", text="Cód")
-    tabela_clientes.column("Cod", width=50, anchor="center")
-    tabela_clientes.heading("Nome", text="Nome / Razão Social")
-    tabela_clientes.column("Nome", width=160, anchor="w")
-    tabela_clientes.heading("Tipo", text="Tipo")
-    tabela_clientes.column("Tipo", width=75, anchor="center")
-    tabela_clientes.heading("Rua", text="Rua")
-    tabela_clientes.column("Rua", width=140, anchor="w")
-    tabela_clientes.heading("Nº", text="Nº")
-    tabela_clientes.column("Nº", width=45, anchor="center")
-    tabela_clientes.heading("Atualização", text="Atualizado em")
-    tabela_clientes.column("Atualização", width=85, anchor="center")
-    tabela_clientes.heading("Central", text="Mod. Central")
-    tabela_clientes.column("Central", width=95, anchor="center")
-    tabela_clientes.heading("Módulo", text="Módulo")
-    tabela_clientes.column("Módulo", width=85, anchor="center")
-    tabela_clientes.heading("Operadora", text="Operadora")
-    tabela_clientes.column("Operadora", width=75, anchor="center")
-    tabela_clientes.heading("Linha", text="Linha / Nº")
-    tabela_clientes.column("Linha", width=95, anchor="center")
-    tabela_clientes.heading("ICCID", text="ICCID")
-    tabela_clientes.column("ICCID", width=110, anchor="center")
-    tabela_clientes.heading("Mac", text="Mac Address")
-    tabela_clientes.column("Mac", width=105, anchor="center")
-    
-    scrollbar_cli = ttk.Scrollbar(frame_tabela_cli, orient="vertical", command=tabela_clientes.yview)
-    tabela_clientes.configure(yscrollcommand=scrollbar_cli.set)
-    tabela_clientes.pack(side="left", fill="both", expand=True)
-    scrollbar_cli.pack(side="right", fill="y")
-
-    def carregar_clientes():
+    def carregar_clientes(termo_busca=None):
         for item in tabela_clientes.get_children():
             tabela_clientes.delete(item)
         
@@ -537,14 +697,28 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
 
         try:
             cursor = conn.cursor()
-            cursor.execute("""SELECT codigo, nome, tipo, rua, numero, data_atualizacao, modelo_central, 
-                              modulo, operadora, linha_numero, iccid, mac_address FROM clientes;""")
+            try:
+                cursor.execute("""SELECT codigo, nome, tipo, documento, rua, numero, bairro, cidade,
+                                  contato, email, data_atualizacao
+                                  FROM clientes ORDER BY CAST(codigo AS INTEGER) ASC;""")
+            except:
+                cursor.execute("""SELECT codigo, nome, tipo, documento, rua, numero, bairro, cidade,
+                                  contato, email, data_atualizacao
+                                  FROM clientes ORDER BY codigo ASC;""")
+
+            termo = termo_busca.strip().lower() if termo_busca else ""
+
             for row in cursor.fetchall():
-                cod, nome, tipo, rua, num, dt_atl, m_cent, mod, op, linha, iccid, mac = row
+                cod, nome, tipo, documento, rua, num, bairro, cidade, contato, email, dt_atl = row
                 if cod and nome:
+                    if termo:
+                        linha_str = " ".join([str(v) if v else "" for v in row]).lower()
+                        if termo not in linha_str:
+                            continue
+
                     tabela_clientes.insert("", "end", values=(
-                        cod, nome, tipo or "Particular", rua or "-", num or "-", dt_atl or "-",
-                        m_cent or "-", mod or "-", op or "-", linha or "-", iccid or "-", mac or "-"
+                        cod, nome, tipo or "Particular", documento or "-", rua or "-", num or "-",
+                        bairro or "-", cidade or "-", contato or "-", email or "-", dt_atl or "-"
                     ))
             cursor.close()
             conn.close()
@@ -552,6 +726,12 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
             print("Erro ao carregar clientes do Supabase:", e)
 
     carregar_clientes()
+
+    def realizar_busca_geral(event=None):
+        termo = entry_busca_geral.get().strip()
+        carregar_clientes(termo)
+
+    entry_busca_geral.bind("<Return>", realizar_busca_geral)
 
     def ao_selecionar_cliente(event):
         selecao = tabela_clientes.selection()
@@ -577,12 +757,12 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
         tel = entry_tel_cli.get().strip()
         email = entry_email_cli.get().strip()
         
-        m_cent = entry_modelo_central.get().strip()
-        modulo = entry_modulo.get().strip()
-        mac = formatar_mac_address(entry_mac.get().strip())
-        operadora = combo_operadora.get().strip()
-        linha = entry_linha.get().strip()
-        iccid = entry_iccid.get().strip()
+        m_cent = combo_tipo_carro.get().strip()
+        modulo = combo_linha.get().strip()
+        mac = combo_modelo.get().strip()
+        operadora = combo_ano.get().strip()
+        linha = combo_combustivel.get().strip()
+        iccid = ""
         data_atl = formatar_data(entry_data_atl.get().strip())
 
         if not cod or not nome:
@@ -599,11 +779,13 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
             cursor.execute("SELECT codigo FROM clientes WHERE codigo = %s;", (cod,))
             existe = cursor.fetchone()
 
+            motivo_alt = ""
             if existe:
-                resposta = messagebox.askyesno("Confirmar Alteração", f"O cliente código '{cod}' já existe.\nDeseja salvar as alterações feitas?")
-                if not resposta:
-                    cursor.close()
-                    conn.close()
+                from tkinter import simpledialog
+                motivo_alt = simpledialog.askstring("Motivo da Alteração", f"O cliente código '{cod}' já existe.\nDigite o motivo desta alteração/atualização cadastral:", parent=janela_principal)
+                if not motivo_alt:
+                    messagebox.showwarning("Atenção", "A atualização foi cancelada. O motivo é obrigatório.")
+                    cursor.close(); conn.close()
                     return
 
                 cursor.execute(
@@ -614,7 +796,7 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
                     (nome, tipo, doc, cep, rua, numero, bairro, cidade, tel, email, 
                      m_cent, modulo, mac, operadora, linha, iccid, data_atl, cod)
                 )
-                acao_log = f"Atualização de cadastro do cliente [{cod}] {nome}"
+                acao_log = f"Atualização de cadastro: {nome} | Motivo: {motivo_alt}"
             else:
                 cursor.execute(
                     """INSERT INTO clientes (codigo, nome, tipo, documento, cep, rua, numero, bairro, cidade, 
@@ -636,8 +818,11 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
             conn.close()
 
             messagebox.showinfo("Sucesso", f"Cliente '{nome}' salvo com sucesso!")
-            limpar_formulario()
             carregar_clientes()
+            carregar_historico_atualizacoes(cod)
+            
+            if str(tab_cli_hist) not in notebook_baixo.tabs():
+                notebook_baixo.add(tab_cli_hist, text=" 📜 Histórico de Atualizações do Cliente ")
 
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao salvar cliente no Supabase: {e}")
@@ -662,9 +847,9 @@ def mostrar_tela_tecnicos(janela_principal, limpar_tela, centralizar_janela, vol
     frame_principal = tk.Frame(janela_principal, padx=20, pady=15)
     frame_principal.pack(fill="both", expand=True)
 
-    tk.Label(frame_principal, text="👥 Cadastro Central de Técnicos (Nuvem)", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 10))
+    tk.Label(frame_principal, text="👨‍🔧 Mecânicos e técnicos", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 10))
 
-    f_form = tk.LabelFrame(frame_principal, text=" Informações Completas do Técnico ", font=("Arial", 9, "bold"), padx=15, pady=10)
+    f_form = tk.LabelFrame(frame_principal, text=" Dados cadastrais do técnico ", font=("Arial", 9, "bold"), padx=15, pady=10)
     f_form.pack(fill="x", pady=(0, 10))
 
     f_l1 = tk.Frame(f_form)
@@ -675,32 +860,40 @@ def mostrar_tela_tecnicos(janela_principal, limpar_tela, centralizar_janela, vol
     entry_cod_tec.pack(side="left", padx=(0, 15))
     entry_cod_tec.insert(0, "")
 
-    tk.Label(f_l1, text="Nome Completo", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
+    tk.Label(f_l1, text="Nome / Razão Social:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
     entry_nome_tec = tk.Entry(f_l1, font=("Arial", 10), width=32)
     entry_nome_tec.pack(side="left", padx=(0, 15))
 
-    tk.Label(f_l1, text="Tipo:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
-    combo_tipo_tec = ttk.Combobox(f_l1, values=["Particular", "Prefeitura"], width=14, state="readonly")
-    combo_tipo_tec.set("Particular")
-    combo_tipo_tec.pack(side="left")
+    tk.Label(f_l1, text="CPF/CNPJ:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
+    entry_doc_tec = tk.Entry(f_l1, font=("Arial", 10), width=18)
+    entry_doc_tec.pack(side="left")
 
     f_l2 = tk.Frame(f_form)
     f_l2.pack(fill="x", pady=(0, 4))
 
-    tk.Label(f_l2, text="CNPJ / CPF:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
-    entry_doc_tec = tk.Entry(f_l2, font=("Arial", 10), width=18)
-    entry_doc_tec.pack(side="left", padx=(0, 15))
+    tk.Label(f_l2, text="CEP:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
+    entry_cep_tec = tk.Entry(f_l2, font=("Arial", 10), width=10)
+    entry_cep_tec.pack(side="left", padx=(0, 8))
+    tk.Label(f_l2, text="Rua:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
+    entry_rua_tec = tk.Entry(f_l2, font=("Arial", 10), width=30)
+    entry_rua_tec.pack(side="left", padx=(0, 8))
+    tk.Label(f_l2, text="Nº:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
+    entry_numero_tec = tk.Entry(f_l2, font=("Arial", 10), width=7)
+    entry_numero_tec.pack(side="left", padx=(0, 8))
+    tk.Label(f_l2, text="Bairro:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
+    entry_bairro_tec = tk.Entry(f_l2, font=("Arial", 10), width=18)
+    entry_bairro_tec.pack(side="left", padx=(0, 8))
+    tk.Label(f_l2, text="Cidade:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
+    entry_cidade_tec = tk.Entry(f_l2, font=("Arial", 10), width=18)
+    entry_cidade_tec.pack(side="left")
 
-    tk.Label(f_l2, text="Endereço:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
-    entry_end_tec = tk.Entry(f_l2, font=("Arial", 10), width=28)
-    entry_end_tec.pack(side="left", padx=(0, 15))
-    
-    tk.Label(f_l2, text="Contato:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
-    entry_tel_tec = tk.Entry(f_l2, font=("Arial", 10), width=15)
+    f_l3 = tk.Frame(f_form)
+    f_l3.pack(fill="x", pady=(0, 4))
+    tk.Label(f_l3, text="Contato:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
+    entry_tel_tec = tk.Entry(f_l3, font=("Arial", 10), width=18)
     entry_tel_tec.pack(side="left", padx=(0, 15))
-
-    tk.Label(f_l2, text="E-mail:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
-    entry_email_tec = tk.Entry(f_l2, font=("Arial", 10), width=22)
+    tk.Label(f_l3, text="E-mail:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 2))
+    entry_email_tec = tk.Entry(f_l3, font=("Arial", 10), width=38)
     entry_email_tec.pack(side="left")
 
     def formatar_cpf_cnpj(texto):
@@ -719,22 +912,43 @@ def mostrar_tela_tecnicos(janela_principal, limpar_tela, centralizar_janela, vol
             return f"({digitos[:2]}) {digitos[2:6]}-{digitos[6:]}"
         return texto
 
+    def consultar_cep_tecnico(event=None):
+        cep_limpo = "".join(filter(str.isdigit, entry_cep_tec.get()))
+        if len(cep_limpo) != 8:
+            return
+        try:
+            import urllib.request
+            import json
+            url = f"https://viacep.com.br/ws/{cep_limpo}/json/"
+            req = urllib.request.Request(url, headers={"User-Agent": "MayerCartch/1.0"})
+            with urllib.request.urlopen(req, timeout=3) as resposta:
+                dados = json.loads(resposta.read().decode("utf-8"))
+            if "erro" not in dados:
+                entry_rua_tec.delete(0, tk.END); entry_rua_tec.insert(0, dados.get("logradouro", ""))
+                entry_bairro_tec.delete(0, tk.END); entry_bairro_tec.insert(0, dados.get("bairro", ""))
+                entry_cidade_tec.delete(0, tk.END); entry_cidade_tec.insert(0, dados.get("localidade", ""))
+                entry_numero_tec.focus_set()
+        except Exception as e:
+            print("Erro ao consultar CEP do técnico:", e)
+
+    entry_cep_tec.bind("<Return>", consultar_cep_tecnico)
+    entry_cep_tec.bind("<FocusOut>", consultar_cep_tecnico)
+
     frame_tabela_tec = tk.Frame(frame_principal)
     frame_tabela_tec.pack(fill="both", expand=True, pady=(0, 10))
 
-    colunas_tec = ("Cod", "Nome", "Tipo", "Documento", "Endereco", "Contato", "Email")
+    colunas_tec = ("Cod", "Nome", "Documento", "CEP", "Rua", "Nº", "Bairro", "Cidade", "Contato", "Email")
     tabela_tecnicos = ttk.Treeview(frame_tabela_tec, columns=colunas_tec, show="headings", height=11)
     
     tabela_tecnicos.heading("Cod", text="Cód")
     tabela_tecnicos.column("Cod", width=70, anchor="center")
     tabela_tecnicos.heading("Nome", text="Nome / Razão Social")
     tabela_tecnicos.column("Nome", width=220, anchor="w")
-    tabela_tecnicos.heading("Tipo", text="Tipo")
-    tabela_tecnicos.column("Tipo", width=90, anchor="center")
     tabela_tecnicos.heading("Documento", text="CNPJ / CPF")
     tabela_tecnicos.column("Documento", width=130, anchor="center")
-    tabela_tecnicos.heading("Endereco", text="Endereço")
-    tabela_tecnicos.column("Endereco", width=240, anchor="w")
+    for coluna, titulo, largura in [("CEP", "CEP", 90), ("Rua", "Rua", 180), ("Nº", "Nº", 55), ("Bairro", "Bairro", 130), ("Cidade", "Cidade", 130)]:
+        tabela_tecnicos.heading(coluna, text=titulo)
+        tabela_tecnicos.column(coluna, width=largura, anchor="w")
     tabela_tecnicos.heading("Contato", text="Contato")
     tabela_tecnicos.column("Contato", width=120, anchor="center")
     tabela_tecnicos.heading("Email", text="E-mail")
@@ -755,10 +969,10 @@ def mostrar_tela_tecnicos(janela_principal, limpar_tela, centralizar_janela, vol
 
         try:
             cursor = conn.cursor()
-            cursor.execute("SELECT codigo, nome, tipo, documento, endereco, contato, email FROM tecnicos;")
-            for cod, nome, tipo, doc, end, tel, email in cursor.fetchall():
+            cursor.execute("SELECT codigo, nome, documento, cep, rua, numero, bairro, cidade, contato, email FROM tecnicos;")
+            for cod, nome, doc, cep, rua, numero, bairro, cidade, tel, email in cursor.fetchall():
                 if cod and nome:
-                    tabela_tecnicos.insert("", "end", values=(cod, nome, tipo or "Particular", doc or "", end or "", tel or "", email or ""))
+                    tabela_tecnicos.insert("", "end", values=(cod, nome, doc or "", cep or "", rua or "", numero or "", bairro or "", cidade or "", tel or "", email or ""))
             cursor.close()
             conn.close()
         except Exception as e:
@@ -776,29 +990,33 @@ def mostrar_tela_tecnicos(janela_principal, limpar_tela, centralizar_janela, vol
             entry_nome_tec.delete(0, tk.END)
             entry_nome_tec.insert(0, vals[1])
 
-            combo_tipo_tec.set(vals[2])
-
             entry_doc_tec.delete(0, tk.END)
-            entry_doc_tec.insert(0, vals[3] if vals[3] != "None" else "")
-
-            entry_end_tec.delete(0, tk.END)
-            entry_end_tec.insert(0, vals[4] if vals[4] != "None" else "")
+            entry_doc_tec.insert(0, vals[2] if vals[2] != "None" else "")
+            entry_cep_tec.delete(0, tk.END); entry_cep_tec.insert(0, vals[3] if vals[3] != "None" else "")
+            entry_rua_tec.delete(0, tk.END); entry_rua_tec.insert(0, vals[4] if vals[4] != "None" else "")
+            entry_numero_tec.delete(0, tk.END); entry_numero_tec.insert(0, vals[5] if vals[5] != "None" else "")
+            entry_bairro_tec.delete(0, tk.END); entry_bairro_tec.insert(0, vals[6] if vals[6] != "None" else "")
+            entry_cidade_tec.delete(0, tk.END); entry_cidade_tec.insert(0, vals[7] if vals[7] != "None" else "")
 
             entry_tel_tec.delete(0, tk.END)
-            entry_tel_tec.insert(0, vals[5] if vals[5] != "None" else "")
+            entry_tel_tec.insert(0, vals[8] if vals[8] != "None" else "")
 
             entry_email_tec.delete(0, tk.END)
-            entry_email_tec.insert(0, vals[6] if vals[6] != "None" else "")
+            entry_email_tec.insert(0, vals[9] if vals[9] != "None" else "")
 
     tabela_tecnicos.bind("<<TreeviewSelect>>", ao_selecionar_tecnico)
 
     def salvar_tecnico():
         cod = entry_cod_tec.get().strip()
         nome = entry_nome_tec.get().strip()
-        tipo = combo_tipo_tec.get().strip()
         doc = formatar_cpf_cnpj(entry_doc_tec.get().strip())
         tel = formatar_telefone(entry_tel_tec.get().strip())
-        end = entry_end_tec.get().strip()
+        cep = entry_cep_tec.get().strip()
+        rua = entry_rua_tec.get().strip()
+        numero = entry_numero_tec.get().strip()
+        bairro = entry_bairro_tec.get().strip()
+        cidade = entry_cidade_tec.get().strip()
+        end = ", ".join(parte for parte in [rua, numero, bairro, cidade] if parte)
         email = entry_email_tec.get().strip()
 
         if not cod or not nome:
@@ -822,14 +1040,14 @@ def mostrar_tela_tecnicos(janela_principal, limpar_tela, centralizar_janela, vol
                     return
                 
                 cursor.execute(
-                    "UPDATE tecnicos SET nome = %s, tipo = %s, documento = %s, endereco = %s, contato = %s, email = %s WHERE codigo = %s;",
-                    (nome, tipo, doc, end, tel, email, cod)
+                    "UPDATE tecnicos SET nome = %s, documento = %s, endereco = %s, cep = %s, rua = %s, numero = %s, bairro = %s, cidade = %s, contato = %s, email = %s WHERE codigo = %s;",
+                    (nome, doc, end, cep, rua, numero, bairro, cidade, tel, email, cod)
                 )
                 acao_log = f"Atualização de cadastro do técnico [{cod}] {nome}"
             else:
                 cursor.execute(
-                    "INSERT INTO tecnicos (codigo, nome, tipo, documento, endereco, contato, email) VALUES (%s, %s, %s, %s, %s, %s, %s);",
-                    (cod, nome, tipo, doc, end, tel, email)
+                    "INSERT INTO tecnicos (codigo, nome, documento, endereco, cep, rua, numero, bairro, cidade, contato, email) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);",
+                    (cod, nome, doc, end, cep, rua, numero, bairro, cidade, tel, email)
                 )
                 acao_log = f"Novo cadastro de técnico [{cod}] {nome}"
 
@@ -846,10 +1064,14 @@ def mostrar_tela_tecnicos(janela_principal, limpar_tela, centralizar_janela, vol
             messagebox.showinfo("Sucesso", f"Técnico '{nome}' salvo com sucesso!")
             
             entry_cod_tec.delete(0, tk.END)
-            entry_cod_tec.insert(0, f"TEC-{tabela_tecnicos.get_children().__len__() + 2:03d}")
+            entry_cod_tec.insert(0, f"{tabela_tecnicos.get_children().__len__() + 2:03d}") # Gera o próximo código do técnico automaticamente
             entry_nome_tec.delete(0, tk.END)
             entry_doc_tec.delete(0, tk.END)
-            entry_end_tec.delete(0, tk.END)
+            entry_cep_tec.delete(0, tk.END)
+            entry_rua_tec.delete(0, tk.END)
+            entry_numero_tec.delete(0, tk.END)
+            entry_bairro_tec.delete(0, tk.END)
+            entry_cidade_tec.delete(0, tk.END)
             entry_tel_tec.delete(0, tk.END)
             entry_email_tec.delete(0, tk.END)
             carregar_tecnicos()

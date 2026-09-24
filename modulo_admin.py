@@ -1,6 +1,7 @@
 import tkinter as tk
+import os
 from tkinter import messagebox
-from tkinter import ttk
+from tkinter import ttk, filedialog
 from datetime import datetime
 import config
 
@@ -15,7 +16,7 @@ def mostrar_tela_gerenciar_feed(janela_principal, limpar_tela, centralizar_janel
     frame_principal = tk.Frame(janela_principal, padx=20, pady=15)
     frame_principal.pack(fill="both", expand=True)
 
-    tk.Label(frame_principal, text="📢 Gerenciamento do Feed de Notícias (Nuvem)", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 10))
+    tk.Label(frame_principal, text="📢 Avisos internos da oficina", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 10))
 
     f_form = tk.LabelFrame(frame_principal, text=" Publicar Novo Aviso no Feed ", font=("Arial", 9, "bold"), padx=12, pady=10)
     f_form.pack(fill="x", pady=(0, 12))
@@ -143,7 +144,7 @@ def mostrar_tela_configuracoes(janela_principal, limpar_tela, centralizar_janela
     frame_principal = tk.Frame(janela_principal, padx=25, pady=20)
     frame_principal.pack(fill="both", expand=True)
 
-    tk.Label(frame_principal, text="⚙️ Configurações do Sistema", font=("Arial", 16, "bold")).pack(anchor="w", pady=(0, 10))
+    tk.Label(frame_principal, text="⚙️ Configurações da oficina", font=("Arial", 16, "bold")).pack(anchor="w", pady=(0, 10))
 
     # --- Bloco de Preferências ---
     f_opcoes = tk.LabelFrame(frame_principal, text=" Preferências Gerais ", font=("Arial", 9, "bold"), padx=15, pady=10)
@@ -160,6 +161,39 @@ def mostrar_tela_configuracoes(janela_principal, limpar_tela, centralizar_janela
 
     tk.Label(f_opcoes, text=f"Banco de Dados Ativo: Supabase PostgreSQL (Nuvem)[cite: 6]", font=("Arial", 9, "italic"), fg="gray").pack(anchor="w", pady=(6, 0))
     tk.Label(f_opcoes, text=f"Usuário Conectado: {config.usuario_logado}", font=("Arial", 9, "italic"), fg="gray").pack(anchor="w", pady=(2, 0))
+
+    f_pastas = tk.LabelFrame(frame_principal, text=" Pastas de arquivos gerados ", font=("Arial", 9, "bold"), padx=12, pady=8)
+    f_pastas.pack(fill="x", pady=(0, 12))
+    campos_pastas = {
+        'orcamentos': 'Orçamentos',
+        'ordens_servico': 'Ordens de serviço',
+        'ordens_compra': 'Ordens de compra',
+        'relatorios': 'Relatórios'
+    }
+    variaveis_pastas = {}
+
+    def selecionar_pasta(tipo, variavel):
+        pasta = filedialog.askdirectory(initialdir=variavel.get(), title=f"Escolher pasta para {campos_pastas[tipo]}", parent=janela_principal)
+        if pasta:
+            variavel.set(os.path.normpath(pasta))
+
+    for tipo, titulo in campos_pastas.items():
+        linha_pasta = tk.Frame(f_pastas)
+        linha_pasta.pack(fill="x", pady=2)
+        tk.Label(linha_pasta, text=f"{titulo}:", width=22, anchor="w", font=("Arial", 9)).pack(side="left")
+        variavel = tk.StringVar(value=config.obter_pasta_saida(tipo))
+        variaveis_pastas[tipo] = variavel
+        tk.Entry(linha_pasta, textvariable=variavel, font=("Arial", 9), state="readonly").pack(side="left", fill="x", expand=True, padx=(0, 6))
+        tk.Button(linha_pasta, text="Escolher...", command=lambda t=tipo, v=variavel: selecionar_pasta(t, v), bg="#1F4E79", fg="white", font=("Arial", 8, "bold")).pack(side="right")
+
+    def salvar_pastas_arquivos():
+        try:
+            config.salvar_pastas_saida({tipo: variavel.get() for tipo, variavel in variaveis_pastas.items()})
+            messagebox.showinfo("Configurações", "Pastas de arquivos salvas com sucesso.", parent=janela_principal)
+        except Exception as erro:
+            messagebox.showerror("Erro", f"Não foi possível salvar as pastas: {erro}", parent=janela_principal)
+
+    tk.Button(f_pastas, text="💾 Salvar pastas de arquivos", command=salvar_pastas_arquivos, bg="#38761D", fg="white", font=("Arial", 9, "bold")).pack(anchor="e", pady=(6, 0))
 
     # --- Bloco de Alteração de Senha ---
     f_senha = tk.LabelFrame(frame_principal, text=" Segurança: Alterar Senha do Usuário ", font=("Arial", 9, "bold"), padx=15, pady=10)
