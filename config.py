@@ -2,6 +2,9 @@ import os
 import sys
 import sqlite3
 import json
+import hashlib
+import hmac
+import secrets
 
 try:
     import psycopg2
@@ -35,8 +38,11 @@ carregar_configuracao_local()
 LARGURA_PADRAO = 1280
 ALTURA_PADRAO = 720
 usuario_logado = None
+usuario_id_logado = None
+usuario_nivel_logado = None
 modo_escuro_ativo = False
 DATABASE_URL = os.getenv('DATABASE_URL', '').strip()
+PLACEHOLDER_SQL = '%s' if DATABASE_URL else '?'
 
 # Nome do arquivo do banco de dados local SQLite
 NOME_BANCO = os.path.join(base_path, 'sistema.db')
@@ -82,8 +88,15 @@ def obter_pasta_saida(tipo):
     os.makedirs(pasta, exist_ok=True)
     return pasta
 
+
 def obter_conexao_banco():
-    """Abre o banco Supabase/PostgreSQL ou usa SQLite quando não há URL configurada."""
+    """Abre o banco usado pelo aplicativo.
+
+    `DATABASE_URL` vem do `.env`: com ela, o app conecta ao PostgreSQL/Supabase;
+    sem ela, usa o arquivo SQLite em `NOME_BANCO`. `PLACEHOLDER_SQL` acompanha
+    essa escolha e é consumido por consultas parametrizadas de outros módulos.
+    Em erro, retorna `None`, que as telas tratam como banco indisponível.
+    """
     try:
         if DATABASE_URL:
             if psycopg2 is None:
@@ -96,8 +109,60 @@ def obter_conexao_banco():
         return None
 
 
+def gerar_hash_senha(senha):
+    """Deriva o valor que será persistido no campo `usuarios.senha`.
+
+    PBKDF2-SHA256 aplica 600 mil iterações e um salt aleatório por senha. O
+    formato salvo contém algoritmo, custo, salt e resultado; não há como obter
+    a senha original a partir desse texto. Login e troca de senha chamam esta
+    função para nunca gravarem a nova senha em texto puro.
+    """
+    salt = secrets.token_bytes(16)
+    iteracoes = 600_000
+    derivado = hashlib.pbkdf2_hmac('sha256', senha.encode('utf-8'), salt, iteracoes)
+    return f"pbkdf2_sha256${iteracoes}${salt.hex()}${derivado.hex()}"
+
+
+def verificar_senha(senha_armazenada, senha_informada):
+    """Compara a senha digitada com o valor persistido em `usuarios.senha`.
+
+    Para hashes PBKDF2, recalcula o derivado usando o salt guardado e compara
+    em tempo constante. A comparação direta existe apenas para autenticar contas
+    antigas durante a migração; `main.py:fazer_login` converte a senha legada em
+    hash logo após um login válido.
+    """
+    if not senha_armazenada:
+        return False
+    if not str(senha_armazenada).startswith('pbkdf2_sha256$'):
+        return hmac.compare_digest(str(senha_armazenada), senha_informada)
+    try:
+        algoritmo, iteracoes, salt_hex, esperado = str(senha_armazenada).split('$', 3)
+        if algoritmo != 'pbkdf2_sha256':
+            return False
+        derivado = hashlib.pbkdf2_hmac(
+            'sha256', senha_informada.encode('utf-8'), bytes.fromhex(salt_hex), int(iteracoes)
+        ).hex()
+        return hmac.compare_digest(derivado, esperado)
+    except (TypeError, ValueError):
+        return False
+
+
+def senha_usa_hash(senha_armazenada):
+    """Identifica o formato para o login decidir se precisa migrar a senha.
+
+    A função não autentica por conta própria: ela complementa
+    `verificar_senha` no callback de login em `main.py`.
+    """
+    return bool(senha_armazenada and str(senha_armazenada).startswith('pbkdf2_sha256$'))
+
+
 def inicializar_banco_postgres():
-    """Cria as tabelas necessárias no PostgreSQL do Supabase."""
+    """Cria e atualiza o esquema PostgreSQL usado pelos módulos do sistema.
+
+    É acionada por `realizar_backup_automatico` na inicialização de `main.py`.
+    Além das tabelas operacionais, cria os registros LGPD e acrescenta colunas
+    de consentimento, nível de usuário e código de cliente em ordens existentes.
+    """
     conn = obter_conexao_banco()
     if not conn:
         return
@@ -108,7 +173,8 @@ def inicializar_banco_postgres():
             CREATE TABLE IF NOT EXISTS usuarios (
                 id SERIAL PRIMARY KEY,
                 username TEXT UNIQUE NOT NULL,
-                senha TEXT NOT NULL
+                senha TEXT NOT NULL,
+                nivel TEXT DEFAULT 'operador'
             );
             CREATE TABLE IF NOT EXISTS feed_noticias (
                 id SERIAL PRIMARY KEY,
@@ -143,7 +209,10 @@ def inicializar_banco_postgres():
                 operadora TEXT,
                 linha_numero TEXT,
                 iccid TEXT,
-                data_atualizacao TEXT
+                data_atualizacao TEXT,
+                consentimento_email BOOLEAN DEFAULT FALSE,
+                consentimento_whatsapp BOOLEAN DEFAULT FALSE,
+                consentimento_atualizado_em TEXT
             );
             CREATE TABLE IF NOT EXISTS tecnicos (
                 id SERIAL PRIMARY KEY,
@@ -172,6 +241,7 @@ def inicializar_banco_postgres():
             CREATE TABLE IF NOT EXISTS uso (
                 id SERIAL PRIMARY KEY,
                 data TEXT,
+                codigo_cliente TEXT,
                 local_setor TEXT,
                 nome_equipamento TEXT,
                 quantidade_usada INTEGER,
@@ -209,7 +279,32 @@ def inicializar_banco_postgres():
             ALTER TABLE tecnicos ADD COLUMN IF NOT EXISTS numero TEXT;
             ALTER TABLE tecnicos ADD COLUMN IF NOT EXISTS bairro TEXT;
             ALTER TABLE tecnicos ADD COLUMN IF NOT EXISTS cidade TEXT;
+            ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS nivel TEXT DEFAULT 'operador';
+            ALTER TABLE clientes ADD COLUMN IF NOT EXISTS consentimento_email BOOLEAN DEFAULT FALSE;
+            ALTER TABLE clientes ADD COLUMN IF NOT EXISTS consentimento_whatsapp BOOLEAN DEFAULT FALSE;
+            ALTER TABLE clientes ADD COLUMN IF NOT EXISTS consentimento_atualizado_em TEXT;
+            ALTER TABLE uso ADD COLUMN IF NOT EXISTS codigo_cliente TEXT;
+            CREATE TABLE IF NOT EXISTS termos_aceites_log (
+                id SERIAL PRIMARY KEY,
+                usuario_id INTEGER NOT NULL,
+                username TEXT NOT NULL,
+                data_hora TEXT NOT NULL,
+                versao_termo TEXT NOT NULL,
+                endereco_ip TEXT
+            );
+            CREATE TABLE IF NOT EXISTS lgpd_eventos (
+                id SERIAL PRIMARY KEY,
+                codigo_cliente TEXT,
+                acao TEXT NOT NULL,
+                usuario TEXT,
+                data_hora TEXT NOT NULL
+            );
         """)
+        cursor.execute("UPDATE usuarios SET nivel = 'admin' WHERE username = 'admin';")
+        cursor.execute(
+            "UPDATE usuarios SET senha = %s WHERE username = 'admin' AND senha = 'admin';",
+            (gerar_hash_senha('admin'),)
+        )
         conn.commit()
         cursor.close()
         conn.close()
@@ -218,8 +313,14 @@ def inicializar_banco_postgres():
         conn.close()
         print("Erro ao inicializar as tabelas do Supabase:", e)
 
+
 def inicializar_banco_local():
-    """Cria todas as tabelas necessárias no SQLite caso elas não existam"""
+    """Cria e migra o arquivo SQLite sem descartar os dados que ele já contém.
+
+    Esta é a versão local de `inicializar_banco_postgres`. As verificações de
+    `PRAGMA table_info` fazem migração incremental: só adicionam colunas que
+    faltam. O login, cadastro, OS e painel LGPD dependem dessas tabelas/colunas.
+    """
     conn = obter_conexao_banco()
     if not conn:
         return
@@ -231,10 +332,18 @@ def inicializar_banco_local():
             CREATE TABLE IF NOT EXISTS usuarios (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT UNIQUE,
-                senha TEXT
+                senha TEXT,
+                nivel TEXT DEFAULT 'operador'
             );
         """)
-        cursor.execute("INSERT OR IGNORE INTO usuarios (username, senha) VALUES ('admin', 'admin');")
+        colunas_usuarios = {linha[1] for linha in cursor.execute("PRAGMA table_info(usuarios);").fetchall()}
+        if 'nivel' not in colunas_usuarios:
+            cursor.execute("ALTER TABLE usuarios ADD COLUMN nivel TEXT DEFAULT 'operador';")
+        cursor.execute(
+            "INSERT OR IGNORE INTO usuarios (username, senha, nivel) VALUES (?, ?, 'admin');",
+            ('admin', gerar_hash_senha('admin'))
+        )
+        cursor.execute("UPDATE usuarios SET nivel = 'admin' WHERE username = 'admin';")
 
         # Tabela de Feed / Notícias
         cursor.execute("""
@@ -279,7 +388,38 @@ def inicializar_banco_local():
                 operadora TEXT,
                 linha_numero TEXT,
                 iccid TEXT,
-                data_atualizacao TEXT
+                data_atualizacao TEXT,
+                consentimento_email INTEGER DEFAULT 0,
+                consentimento_whatsapp INTEGER DEFAULT 0,
+                consentimento_atualizado_em TEXT
+            );
+        """)
+        colunas_clientes = {linha[1] for linha in cursor.execute("PRAGMA table_info(clientes);").fetchall()}
+        # Esses campos registram os opt-ins independentes exibidos no cadastro.
+        for coluna, definicao in (
+            ('consentimento_email', 'INTEGER DEFAULT 0'),
+            ('consentimento_whatsapp', 'INTEGER DEFAULT 0'),
+            ('consentimento_atualizado_em', 'TEXT')
+        ):
+            if coluna not in colunas_clientes:
+                cursor.execute(f"ALTER TABLE clientes ADD COLUMN {coluna} {definicao};")
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS termos_aceites_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                usuario_id INTEGER NOT NULL,
+                username TEXT NOT NULL,
+                data_hora TEXT NOT NULL,
+                versao_termo TEXT NOT NULL,
+                endereco_ip TEXT
+            );
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS lgpd_eventos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                codigo_cliente TEXT,
+                acao TEXT NOT NULL,
+                usuario TEXT,
+                data_hora TEXT NOT NULL
             );
         """)
 
@@ -315,6 +455,7 @@ def inicializar_banco_local():
             CREATE TABLE IF NOT EXISTS uso (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 data TEXT,
+                codigo_cliente TEXT,
                 local_setor TEXT,
                 nome_equipamento TEXT,
                 quantidade_usada INTEGER,
@@ -324,6 +465,10 @@ def inicializar_banco_local():
                 descricao_servico TEXT
             );
         """)
+        colunas_uso = {linha[1] for linha in cursor.execute("PRAGMA table_info(uso);").fetchall()}
+        if 'codigo_cliente' not in colunas_uso:
+            # Permite ao painel LGPD localizar/anonimizar cada OS sem depender do nome.
+            cursor.execute("ALTER TABLE uso ADD COLUMN codigo_cliente TEXT;")
 
         # Tabela de Atualizações / Logs
         cursor.execute("""
@@ -363,12 +508,18 @@ def inicializar_banco_local():
     except Exception as e:
         print("Erro ao inicializar as tabelas do banco local:", e)
 
+
 def realizar_backup_automatico():
-    """Inicializa o esquema do banco configurado ao iniciar o sistema."""
+    """Seleciona a migração do banco correta durante a inicialização do app.
+
+    Apesar do nome histórico, esta função prepara o esquema; o backup de dados
+    é tratado em outro fluxo. `main.py` chama esta função antes de mostrar login.
+    """
     if DATABASE_URL:
         inicializar_banco_postgres()
     else:
         inicializar_banco_local()
+
 
 def atualizar_feed_estoque_critico():
     """Verifica o estoque inteligentemente no SQLite"""

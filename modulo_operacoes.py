@@ -16,6 +16,7 @@ def anexar_historico_estorno(status_atual, novo_evento):
         return novo_evento
     return f"{status_atual}\n{novo_evento}"
 
+
 # ==========================================
 # TELA DE ENTRADA DE PEÇAS E MATERIAIS
 # ==========================================
@@ -26,7 +27,7 @@ def mostrar_tela_entrada(janela_principal, limpar_tela, centralizar_janela, volt
     frame_principal = tk.Frame(janela_principal, padx=15, pady=10)
     frame_principal.pack(fill="both", expand=True)
 
-    tk.Label(frame_principal, text="📥 Registrar compra e entrada de peças", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 6))
+    tk.Label(frame_principal, text="Registrar compra e entrada de peças", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 6))
 
     # --- TOPO: DADOS DA ORDEM DE COMPRA ---
     f_topo_oc = tk.LabelFrame(frame_principal, text=" Dados da compra e fornecedor ", font=("Arial", 9, "bold"), padx=10, pady=8)
@@ -74,7 +75,7 @@ def mostrar_tela_entrada(janela_principal, limpar_tela, centralizar_janela, volt
         itens_entrada_memoria = [it for it in itens_entrada_memoria if it["cod"] != cod_rem]
         tabela_oc.delete(item_id)
 
-    tk.Button(frame_principal, text="❌ Remover Item Selecionado", command=remover_item_selecionado, bg="#B45F06", fg="white", font=("Arial", 8, "bold")).pack(anchor="w", pady=(0, 4))
+    tk.Button(frame_principal, text="Remover Item Selecionado", command=remover_item_selecionado, bg="#B45F06", fg="white", font=("Arial", 8, "bold")).pack(anchor="w", pady=(0, 4))
 
     # --- BLOCO DE ADICIONAR EQUIPAMENTO ---
     f_add_item_oc = tk.LabelFrame(frame_principal, text=" Adicionar peça ao recebimento por código ", font=("Arial", 9, "bold"), padx=10, pady=6)
@@ -129,7 +130,7 @@ def mostrar_tela_entrada(janela_principal, limpar_tela, centralizar_janela, volt
         tabela_oc.insert("", "end", values=(cod, nome_equipamento, qtd, obs))
         entry_item_cod.delete(0, tk.END); entry_item_qtd.delete(0, tk.END); entry_item_obs.delete(0, tk.END)
 
-    tk.Button(f_campos_item_oc, text="➕ Adicionar à OC", command=adicionar_item_oc_lista, bg="#2F5597", fg="white", font=("Arial", 9, "bold")).pack(side="left")
+    tk.Button(f_campos_item_oc, text="Adicionar à OC", command=adicionar_item_oc_lista, bg="#2F5597", fg="white", font=("Arial", 9, "bold")).pack(side="left")
 
     # --- BOTÕES INFERIORES ---
     f_baixo_oc = tk.Frame(frame_principal)
@@ -187,7 +188,7 @@ def mostrar_tela_entrada(janela_principal, limpar_tela, centralizar_janela, volt
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao registrar Ordem de Compra: {e}")
 
-    tk.Button(f_baixo_oc, text="💾 Confirmar entrada de peças", command=salvar_ordem_compra, bg="#38761D", fg="white", font=("Arial", 10, "bold"), height=2).pack(side="right")
+    tk.Button(f_baixo_oc, text="Confirmar entrada de peças", command=salvar_ordem_compra, bg="#38761D", fg="white", font=("Arial", 10, "bold"), height=2).pack(side="right")
     tk.Button(frame_principal, text="⬅ Voltar ao Menu", command=voltar_menu_callback, bg="#595959", fg="white", font=("Arial", 9), height=1).pack(fill="x", pady=(2, 0))
 
 
@@ -201,7 +202,7 @@ def mostrar_tela_pre_emissao_os(janela_principal, limpar_tela, centralizar_janel
     frame_principal = tk.Frame(janela_principal, padx=20, pady=15)
     frame_principal.pack(fill="both", expand=True)
 
-    tk.Label(frame_principal, text="💰 Solicitação de orçamento", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 10))
+    tk.Label(frame_principal, text="Solicitação de orçamento", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 10))
 
     f_form = tk.LabelFrame(frame_principal, text=" Dados do Orçamento e do Cliente ", font=("Arial", 9, "bold"), padx=15, pady=12)
     f_form.pack(fill="x", pady=(0, 15))
@@ -251,8 +252,8 @@ def mostrar_tela_pre_emissao_os(janela_principal, limpar_tela, centralizar_janel
     tk.Label(f_l4, text="Observação do item:", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 4))
     entry_obs_item = tk.Entry(f_l4, font=("Arial", 10), width=55)
     entry_obs_item.pack(side="left", padx=(0, 12))
-    tk.Button(f_l4, text="➕ Adicionar item", command=lambda: adicionar_item_orcamento(), bg="#38761D", fg="white", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 5))
-    tk.Button(f_l4, text="🗑 Remover selecionado", command=lambda: remover_item_orcamento(), bg="#CC0000", fg="white", font=("Arial", 9, "bold")).pack(side="left")
+    tk.Button(f_l4, text="Adicionar item", command=lambda: adicionar_item_orcamento(), bg="#38761D", fg="white", font=("Arial", 9, "bold")).pack(side="left", padx=(0, 5))
+    tk.Button(f_l4, text="Remover selecionado", command=lambda: remover_item_orcamento(), bg="#CC0000", fg="white", font=("Arial", 9, "bold")).pack(side="left")
 
     frame_itens_orcamento = tk.LabelFrame(f_form, text=" Itens adicionados ao orçamento ", font=("Arial", 9, "bold"), padx=6, pady=5)
     frame_itens_orcamento.pack(fill="both", expand=True, pady=(8, 0))
@@ -554,7 +555,7 @@ def mostrar_tela_saida(janela_principal, limpar_tela, centralizar_janela, voltar
     frame_principal = tk.Frame(janela_principal, padx=15, pady=10)
     frame_principal.pack(fill="both", expand=True)
 
-    tk.Label(frame_principal, text="🛠️ Abrir ordem de serviço", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 6))
+    tk.Label(frame_principal, text="Abrir ordem de serviço", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 6))
 
     # --- SISTEMA DE ABAS (Lançamento da OS x Histórico Dinâmico) ---
     notebook_os = ttk.Notebook(frame_principal)
@@ -564,7 +565,7 @@ def mostrar_tela_saida(janela_principal, limpar_tela, centralizar_janela, voltar
     # ABA 1: LANÇAMENTO DA ORDEM DE SERVIÇO
     # ==========================================
     tab_lancamento = ttk.Frame(notebook_os, padding=10)
-    notebook_os.add(tab_lancamento, text="  📝 Lançamento da OS  ")
+    notebook_os.add(tab_lancamento, text="  Lançamento da OS  ")
 
     f_topo_os = tk.LabelFrame(tab_lancamento, text=" Informações da Ordem de Serviço, Cliente, Técnico e Serviço ", font=("Arial", 9, "bold"), padx=10, pady=8)
     f_topo_os.pack(fill="x", pady=(0, 6))
@@ -982,7 +983,7 @@ def mostrar_tela_saida(janela_principal, limpar_tela, centralizar_janela, voltar
         tabela_os.insert("", "end", values=(cod, nome_equipamento, qtd, obs))
         entry_item_cod.delete(0, tk.END); entry_item_qtd.delete(0, tk.END); entry_item_obs.delete(0, tk.END)
 
-    tk.Button(f_campos_item_os, text="➕ Adicionar à OS", command=adicionar_item_os_lista, bg="#2F5597", fg="white", font=("Arial", 9, "bold")).pack(side="left")
+    tk.Button(f_campos_item_os, text="Adicionar à OS", command=adicionar_item_os_lista, bg="#2F5597", fg="white", font=("Arial", 9, "bold")).pack(side="left")
 
     # --- BOTÕES INFERIORES ---
     f_baixo_os = tk.Frame(frame_principal)
@@ -1086,6 +1087,13 @@ def mostrar_tela_saida(janela_principal, limpar_tela, centralizar_janela, voltar
             messagebox.showerror("Erro", f"Não foi possível salvar o orçamento: {e}", parent=janela_principal)
 
     def salvar_ordem_servico():
+        """Valida a OS, atualiza estoque e grava uma linha em `uso` por item.
+
+        O código do cliente é carregado do cadastro e salvo em `uso.codigo_cliente`;
+        o painel LGPD usa essa chave estável para exportar/anonimizar a OS sem buscar
+        só pelo nome. A descrição legível continua sendo mantida para os relatórios.
+        Ao final, `modulo_pdf` gera o documento e as tabelas da tela são limpas.
+        """
         num_os = entry_num_os.get().strip()
         cod_cli = entry_cod_cli.get().strip()
         desc_servico = text_desc_servico.get("1.0", tk.END).strip()
@@ -1147,9 +1155,10 @@ def mostrar_tela_saida(janela_principal, limpar_tela, centralizar_janela, voltar
             obs_final = f"{cabecalho_os}{bloco_servico}\n{bloco_itens}"
 
             if not itens_saida_memoria:
+                # Mesmo uma OS sem peças precisa do código para aparecer no histórico LGPD.
                 cursor.execute(
-                    "INSERT INTO uso (data, local_setor, nome_equipamento, quantidade_usada, observacao, usuario, status, descricao_servico) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);",
-                    (data_hoje, f"{nome_cliente} ({tipo_cliente})", "Nenhum (Ajuste / Suporte)", 0, obs_final, config.usuario_logado, "Aberta", desc_servico)
+                    "INSERT INTO uso (data, codigo_cliente, local_setor, nome_equipamento, quantidade_usada, observacao, usuario, status, descricao_servico) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);",
+                    (data_hoje, cod_cli, f"{nome_cliente} ({tipo_cliente})", "Nenhum (Ajuste / Suporte)", 0, obs_final, config.usuario_logado, "Aberta", desc_servico)
                 )
             else:
                 for index, item in enumerate(itens_saida_memoria):
@@ -1162,8 +1171,8 @@ def mostrar_tela_saida(janela_principal, limpar_tela, centralizar_janela, voltar
                     )
 
                     cursor.execute(
-                        "INSERT INTO uso (data, local_setor, nome_equipamento, quantidade_usada, observacao, usuario, status, descricao_servico) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);",
-                        (data_hoje, f"{nome_cliente} ({tipo_cliente})", tipo, qtde, obs_final, config.usuario_logado, "Aberta", desc_servico)
+                        "INSERT INTO uso (data, codigo_cliente, local_setor, nome_equipamento, quantidade_usada, observacao, usuario, status, descricao_servico) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);",
+                        (data_hoje, cod_cli, f"{nome_cliente} ({tipo_cliente})", tipo, qtde, obs_final, config.usuario_logado, "Aberta", desc_servico)
                     )
 
             cursor.execute("UPDATE orcamentos SET status = %s WHERE numero_os = %s;", ("Aprovado/OS registrada", num_os))
@@ -1271,8 +1280,8 @@ def mostrar_tela_saida(janela_principal, limpar_tela, centralizar_janela, voltar
     entry_num_os.bind("<Return>", buscar_os_por_numero)
     entry_num_os.bind("<FocusOut>", buscar_os_por_numero)
 
-    tk.Button(f_baixo_os, text="📄 Gerar orçamento / pré-OS", command=gerar_orcamento_os, bg="#7030A0", fg="white", font=("Arial", 10, "bold"), height=2).pack(side="left", fill="x", expand=True, padx=(0, 5))
-    tk.Button(f_baixo_os, text="✅ Registrar ordem de serviço", command=salvar_ordem_servico, bg="#2F5597", fg="white", font=("Arial", 10, "bold"), height=2).pack(side="right", fill="x", expand=True, padx=(5, 0))
+    tk.Button(f_baixo_os, text="Gerar orçamento / pré-OS", command=gerar_orcamento_os, bg="#7030A0", fg="white", font=("Arial", 10, "bold"), height=2).pack(side="left", fill="x", expand=True, padx=(0, 5))
+    tk.Button(f_baixo_os, text="Registrar ordem de serviço", command=salvar_ordem_servico, bg="#2F5597", fg="white", font=("Arial", 10, "bold"), height=2).pack(side="right", fill="x", expand=True, padx=(5, 0))
     tk.Button(frame_principal, text="⬅ Voltar ao Menu", command=voltar_menu_callback, bg="#595959", fg="white", font=("Arial", 9), height=1).pack(fill="x", pady=(2, 0))
 
 
@@ -1280,21 +1289,27 @@ def mostrar_tela_saida(janela_principal, limpar_tela, centralizar_janela, voltar
 # TELA DE ESTORNO UNIFICADA - SUPABASE
 # ==========================================
 def mostrar_tela_estorno(janela_principal, limpar_tela, centralizar_janela, voltar_menu_callback):
+    """Mostra as árvores de estorno/devolução e mantém o retorno ao menu no rodapé.
+
+    A aba de compras atualiza `entrada` e `estoque`; a aba de OS atualiza `uso`
+    e devolve saldo ao estoque. Cada ação preserva histórico de status e recarrega
+    sua árvore. O callback recebido de `main.py` retorna à aba Oficina.
+    """
     limpar_tela(janela_principal)
     centralizar_janela(janela_principal, config.LARGURA_PADRAO, config.ALTURA_PADRAO)
 
     frame_principal = tk.Frame(janela_principal, padx=15, pady=10)
     frame_principal.pack(fill="both", expand=True)
 
-    tk.Label(frame_principal, text="🔄 Central de Estornos (Nuvem)", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 8))
+    tk.Label(frame_principal, text="Central de Estornos (Nuvem)", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 8))
 
     notebook_estorno = ttk.Notebook(frame_principal)
     notebook_estorno.pack(fill="both", expand=True, pady=(0, 10))
     estilo_estorno = ttk.Style()
-    estilo_estorno.configure("Estorno.Treeview", rowheight=42)
+    estilo_estorno.configure("Estorno.Treeview", rowheight=30)
 
     tab_oc = ttk.Frame(notebook_estorno)
-    notebook_estorno.add(tab_oc, text="  📦 Ordens de Compra (OC / Fornecedor)  ")
+    notebook_estorno.add(tab_oc, text="  Ordens de Compra (OC / Fornecedor)  ")
 
     f_oc_esq = tk.Frame(tab_oc, padx=10, pady=10)
     f_oc_esq.pack(side="left", fill="both", expand=True)
@@ -1449,10 +1464,10 @@ def mostrar_tela_estorno(janela_principal, limpar_tela, centralizar_janela, volt
 
     f_botoes_oc = tk.Frame(tab_oc, padx=10, pady=5)
     f_botoes_oc.pack(fill="x")
-    tk.Button(f_botoes_oc, text="🔄 Executar Estorno", command=estornar_oc_selecionada, bg="#CC0000", fg="white", font=("Arial", 9, "bold"), height=2).pack(fill="x")
+    tk.Button(f_botoes_oc, text="Executar Estorno", command=estornar_oc_selecionada, bg="#CC0000", fg="white", font=("Arial", 9, "bold"), height=2).pack(fill="x") # OC
 
     tab_os = ttk.Frame(notebook_estorno)
-    notebook_estorno.add(tab_os, text="  📋 Ordens de Serviço (OS / Inventário)  ")
+    notebook_estorno.add(tab_os, text="  Ordens de Serviço (OS / Inventário)  ")
 
     f_os_esq = tk.Frame(tab_os, padx=10, pady=10)
     f_os_esq.pack(side="left", fill="both", expand=True)
@@ -1505,7 +1520,7 @@ def mostrar_tela_estorno(janela_principal, limpar_tela, centralizar_janela, volt
                 
                 st_pai = "ESTORNADA" if not ativos else "ATIVO"
                 tag_pai = "normal" if st_pai == "ATIVO" else "estornado"
-                txt_pai = f"📋 {os_num}" if st_pai == "ATIVO" else f"❌ [ESTORNADA] {os_num}"
+                txt_pai = f" {os_num}" if st_pai == "ATIVO" else f" [ESTORNADA] {os_num}"
 
                 pai_id = arvore_os.insert("", "end", text=txt_pai, values=(f"Data: {data_os}", st_pai, f"Ativos: {len(ativos)}/{len(itens)} itens"), tags=(tag_pai,))
                 
@@ -1515,7 +1530,7 @@ def mostrar_tela_estorno(janela_principal, limpar_tela, centralizar_janela, volt
                     
                     if qtd_item == 0:
                         tag_nome = "estornado"
-                        txt_label = f"❌ [ESTORNADO] {it['tipo']}"
+                        txt_label = f" [ESTORNADO] {it['tipo']}"
                         status_str = "ESTORNADO"
                     else:
                         tag_nome = "normal"
@@ -1540,7 +1555,7 @@ def mostrar_tela_estorno(janela_principal, limpar_tela, centralizar_janela, volt
         texto_item = arvore_os.item(item_id, "text")
         tags_item = arvore_os.item(item_id, "tags")
 
-        if "📋" in texto_item or "❌ [ESTORNADA]" in texto_item:
+        if "📋" in texto_item or " [ESTORNADA]" in texto_item:
             messagebox.showinfo("Aviso", "Por favor, selecione o equipamento específico (filho) da OS para devolver.")
             return
 
@@ -1608,9 +1623,17 @@ def mostrar_tela_estorno(janela_principal, limpar_tela, centralizar_janela, volt
 
     f_botoes_os = tk.Frame(tab_os, padx=10, pady=5)
     f_botoes_os.pack(fill="x")
-    tk.Button(f_botoes_os, text="🔄 Executar Devolução", command=estornar_os_selecionada, bg="#1F4E79", fg="white", font=("Arial", 9, "bold"), height=2).pack(fill="x")
+    tk.Button(f_botoes_os, text="Executar Estorno", command=estornar_os_selecionada, bg="#1F4E79", fg="white", font=("Arial", 9, "bold"), height=2).pack(fill="x") # OS
 
-    tk.Button(frame_principal, text="⬅ Voltar ao Menu", command=voltar_menu_callback, bg="#595959", fg="white", font=("Arial", 10), height=1).pack(fill="x", pady=(10, 0))
+    tk.Button(
+        frame_principal,
+        text="⬅ Voltar ao Menu",
+        command=voltar_menu_callback,
+        bg="#595959",
+        fg="white",
+        font=("Arial", 10),
+        height=1
+    ).pack(side="bottom", fill="x", pady=(4, 0))
 
 
 # ==========================================
@@ -1623,8 +1646,8 @@ def mostrar_tela_armazem(janela_principal, limpar_tela, centralizar_janela, volt
 
     frame_principal = tk.Frame(janela_principal, padx=20, pady=15)
     frame_principal.pack(fill="both", expand=True)
-
-    tk.Label(frame_principal, text="📦 Estoque de peças e materiais", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 10))
+    # Cabeçalho da tela de armazém
+    tk.Label(frame_principal, text="Estoque de peças e materiais", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 10))
 
     frame_tabela = tk.Frame(frame_principal)
     frame_tabela.pack(fill="both", expand=True, pady=(0, 10))

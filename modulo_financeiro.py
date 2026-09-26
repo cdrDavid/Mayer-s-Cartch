@@ -3,6 +3,7 @@ from tkinter import messagebox
 from tkinter import ttk
 from datetime import datetime
 import config
+import modulo_lgpd
 
 
 # ==========================================
@@ -16,7 +17,7 @@ def mostrar_tela_historico_movimentacoes(janela_principal, limpar_tela, centrali
     frame_principal = tk.Frame(janela_principal, padx=15, pady=10)
     frame_principal.pack(fill="both", expand=True)
 
-    tk.Label(frame_principal, text="📊 Histórico da oficina e auditoria", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 6))
+    tk.Label(frame_principal, text="Histórico da oficina e auditoria", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 6))
 
     # --- FILTROS DE PESQUISA ---
     f_filtros = tk.LabelFrame(frame_principal, text=" Filtros de Pesquisa ", font=("Arial", 9, "bold"), padx=10, pady=6)
@@ -193,7 +194,7 @@ def mostrar_tela_fornecedores(janela_principal, limpar_tela, centralizar_janela,
     frame_principal = tk.Frame(janela_principal, padx=20, pady=15)
     frame_principal.pack(fill="both", expand=True)
 
-    tk.Label(frame_principal, text="🔩 Cadastro de peças e serviços", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 10))
+    tk.Label(frame_principal, text="Cadastro de peças e serviços", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 10))
 
     f_form = tk.LabelFrame(frame_principal, text=" Dados da peça ou serviço ", font=("Arial", 9, "bold"), padx=15, pady=10)
     f_form.pack(fill="x", pady=(0, 10))
@@ -354,7 +355,7 @@ def mostrar_tela_fornecedores(janela_principal, limpar_tela, centralizar_janela,
     f_botoes = tk.Frame(frame_principal)
     f_botoes.pack(fill="x", pady=(5, 5))
     
-    tk.Button(f_botoes, text="💾 Salvar / Atualizar Produto", command=salvar_produto, bg="#38761D", fg="white", font=("Arial", 10, "bold"), height=2).pack(fill="x")
+    tk.Button(f_botoes, text="Salvar / Atualizar Produto", command=salvar_produto, bg="#38761D", fg="white", font=("Arial", 10, "bold"), height=2).pack(fill="x")
     tk.Button(frame_principal, text="⬅ Voltar ao Menu", command=voltar_menu_callback, bg="#595959", fg="white", font=("Arial", 10), height=1).pack(fill="x", pady=(5, 0))
 
 
@@ -362,17 +363,23 @@ def mostrar_tela_fornecedores(janela_principal, limpar_tela, centralizar_janela,
 # TELA 3: CADASTRO CENTRAL DE CLIENTES (SUPABASE)
 # ==========================================
 def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, voltar_menu_callback):
-    """Tela de Cadastro e Gerenciamento Completo de Clientes via Supabase"""
+    """Constrói o cadastro, a pesquisa e o histórico de clientes.
+
+    Esta tela é aberta pela aba Cadastros de `main.py`. Os campos e opt-ins
+    alimentam `salvar_cliente`; a busca seleciona uma linha e chama
+    `carregar_dados_por_codigo`; o histórico vem da tabela `atualizacoes`.
+    A função de máscara vem de `modulo_lgpd` e só altera a exibição do CPF/CNPJ.
+    """
     limpar_tela(janela_principal)
     centralizar_janela(janela_principal, config.LARGURA_PADRAO, config.ALTURA_PADRAO)
 
     frame_principal = tk.Frame(janela_principal, padx=15, pady=10)
     frame_principal.pack(fill="both", expand=True)
 
-    tk.Label(frame_principal, text="👥 Clientes e veículos", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 6))
+    tk.Label(frame_principal, text="Clientes e veículos", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 6))
 
     # --- BLOCO 1: DADOS CADASTRAIS DO CLIENTE ---
-    f_form = tk.LabelFrame(frame_principal, text=" 📋 Dados Cadastrais do Cliente ", font=("Arial", 9, "bold"), padx=12, pady=8)
+    f_form = tk.LabelFrame(frame_principal, text=" Dados Cadastrais do Cliente ", font=("Arial", 9, "bold"), padx=12, pady=8)
     f_form.pack(fill="x", pady=(0, 6))
 
     f_l1 = tk.Frame(f_form)
@@ -434,9 +441,21 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
     entry_email_cli = tk.Entry(f_l3, font=("Arial", 9), width=45)
     entry_email_cli.pack(side="left")
 
+    # O consentimento promocional é opcional e começa desmarcado para cada novo cadastro.
+    f_consentimento = tk.Frame(f_form)
+    f_consentimento.pack(fill="x", pady=(5, 0))
+    consentimento_email = tk.IntVar(value=0)
+    consentimento_whatsapp = tk.IntVar(value=0)
+    tk.Checkbutton(
+        f_consentimento, text="Autoriza e-mails promocionais", variable=consentimento_email
+    ).pack(side="left", padx=(0, 18))
+    tk.Checkbutton(
+        f_consentimento, text="Autoriza WhatsApp promocional", variable=consentimento_whatsapp
+    ).pack(side="left")
+
 
     # --- BLOCO 2: DADOS TÉCNICOS / EQUIPAMENTO & LINHA ---
-    f_tec = tk.LabelFrame(frame_principal, text=" 🚗 Dados do veículo ", font=("Arial", 9, "bold"), padx=12, pady=8)
+    f_tec = tk.LabelFrame(frame_principal, text=" Dados do veículo ", font=("Arial", 9, "bold"), padx=12, pady=8)
     f_tec.pack(fill="x", pady=(0, 8))
 
     f_t1 = tk.Frame(f_tec)
@@ -500,7 +519,7 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
 
     # Aba 1: Clientes Cadastrados com Barra de Pesquisa Integrada no Topo
     tab_cli_lista = ttk.Frame(notebook_baixo, padding=6)
-    notebook_baixo.add(tab_cli_lista, text=" 📋 Clientes Cadastrados ")
+    notebook_baixo.add(tab_cli_lista, text=" Clientes Cadastrados ")
 
     f_pesquisa_barra = tk.Frame(tab_cli_lista)
     f_pesquisa_barra.pack(fill="x", pady=(0, 4))
@@ -557,6 +576,7 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
 
     # --- FUNÇÕES DE AUXÍLIO ---
     def consultar_cep(event=None):
+        """Consulta o ViaCEP e preenche endereço, sem persistir o cadastro."""
         cep_limpo = "".join(filter(str.isdigit, entry_cep.get()))
         if len(cep_limpo) != 8:
             return
@@ -579,6 +599,7 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
     entry_cep.bind("<FocusOut>", consultar_cep)
 
     def limpar_formulario():
+        """Limpa os campos e redefine os opt-ins antes de um novo cadastro."""
         for ent in [entry_cod_cli, entry_nome_cli, entry_doc_cli, entry_cep, entry_rua, entry_numero, entry_bairro, entry_cidade, entry_tel_cli, entry_email_cli]:
             ent.delete(0, tk.END)
         combo_tipo_cli.set('Particular')
@@ -588,6 +609,8 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
         combo_modelo.set('Selecione')
         combo_ano.set('Selecione')
         combo_combustivel.set('Selecione')
+        consentimento_email.set(0)
+        consentimento_whatsapp.set(0)
         entry_data_atl.delete(0, tk.END)
         entry_data_atl.insert(0, datetime.now().strftime("%d/%m/%Y"))
         for item in tabela_historico_alt.get_children():
@@ -597,17 +620,20 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
             notebook_baixo.forget(tab_cli_hist)
 
     def formatar_mac_address(texto):
+        """Normaliza caracteres de um MAC em pares hexadecimais separados por dois-pontos."""
         limpo = "".join(c for c in texto.upper() if c.isalnum())
         pares = [limpo[i:i+2] for i in range(0, min(len(limpo), 12), 2)]
         return ":".join(pares)
 
     def formatar_data(texto):
+        """Formata a data digitada antes de gravá-la como texto no cadastro."""
         digitos = "".join(filter(str.isdigit, texto))
         if len(digitos) >= 5:
             return f"{digitos[:2]}/{digitos[2:4]}/{digitos[4:8]}"
         return texto
 
     def carregar_historico_atualizacoes(cod_cliente):
+        """Atualiza a aba de auditoria cadastral para o código selecionado."""
         for item in tabela_historico_alt.get_children():
             tabela_historico_alt.delete(item)
             
@@ -632,6 +658,11 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
             print("Erro ao carregar histórico de atualizações:", e)
 
     def carregar_dados_por_codigo(event=None):
+        """Busca um cliente pelo código e distribui os campos na tela.
+
+        Além dos dados cadastrais, carrega os dois opt-ins para permitir revisão
+        pelo Controlador e depois encaminha o mesmo código à consulta do histórico.
+        """
         cod_digitado = entry_cod_cli.get().strip()
         if not cod_digitado:
             limpar_formulario()
@@ -643,7 +674,8 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
         try:
             cursor = conn.cursor()
             cursor.execute("""SELECT codigo, nome, tipo, documento, cep, rua, numero, bairro, cidade, 
-                              contato, email, modelo_central, modulo, mac_address, operadora, linha_numero, iccid, data_atualizacao 
+                              contato, email, modelo_central, modulo, mac_address, operadora, linha_numero, iccid, data_atualizacao,
+                              consentimento_email, consentimento_whatsapp
                               FROM clientes WHERE codigo = %s;""", (cod_digitado,))
             res = cursor.fetchone()
             cursor.close()
@@ -673,11 +705,13 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
                 combo_combustivel.set(combustivel if combustivel in combo_combustivel['values'] else "Selecione")
                 if res[17]:
                     entry_data_atl.delete(0, tk.END); entry_data_atl.insert(0, res[17])
+                consentimento_email.set(int(bool(res[18])))
+                consentimento_whatsapp.set(int(bool(res[19])))
                 
                 carregar_historico_atualizacoes(cod_digitado)
                 
                 if str(tab_cli_hist) not in notebook_baixo.tabs():
-                    notebook_baixo.add(tab_cli_hist, text=" 📜 Histórico de Atualizações do Cliente ")
+                    notebook_baixo.add(tab_cli_hist, text=" Histórico de Atualizações do Cliente ")
             else:
                 if str(tab_cli_hist) in notebook_baixo.tabs():
                     notebook_baixo.forget(tab_cli_hist)
@@ -688,6 +722,7 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
     entry_cod_cli.bind("<FocusOut>", carregar_dados_por_codigo)
 
     def carregar_clientes(termo_busca=None):
+        """Recarrega a Treeview e mascara o documento antes de exibi-lo."""
         for item in tabela_clientes.get_children():
             tabela_clientes.delete(item)
         
@@ -717,7 +752,7 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
                             continue
 
                     tabela_clientes.insert("", "end", values=(
-                        cod, nome, tipo or "Particular", documento or "-", rua or "-", num or "-",
+                        cod, nome, tipo or "Particular", modulo_lgpd.mascarar_documento(documento), rua or "-", num or "-",
                         bairro or "-", cidade or "-", contato or "-", email or "-", dt_atl or "-"
                     ))
             cursor.close()
@@ -728,12 +763,14 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
     carregar_clientes()
 
     def realizar_busca_geral(event=None):
+        """Passa o texto digitado para o carregador da lista de clientes."""
         termo = entry_busca_geral.get().strip()
         carregar_clientes(termo)
 
     entry_busca_geral.bind("<Return>", realizar_busca_geral)
 
     def ao_selecionar_cliente(event):
+        """Copia o código da linha selecionada e preenche o formulário pelo banco."""
         selecao = tabela_clientes.selection()
         if selecao:
             item_selecionado = tabela_clientes.item(selecao[0], "values")
@@ -745,6 +782,12 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
     tabela_clientes.bind("<<TreeviewSelect>>", ao_selecionar_cliente)
 
     def salvar_cliente():
+        """Insere ou atualiza cadastro, opt-ins e trilha de alterações.
+
+        Os valores dos widgets viram parâmetros SQL; os consentimentos são
+        gravados separadamente e com horário. Depois do commit, a tabela e a
+        aba de histórico são recarregadas para refletir o registro persistido.
+        """
         cod = entry_cod_cli.get().strip()
         nome = entry_nome_cli.get().strip()
         tipo = combo_tipo_cli.get().strip()
@@ -756,6 +799,10 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
         cidade = entry_cidade.get().strip()
         tel = entry_tel_cli.get().strip()
         email = entry_email_cli.get().strip()
+        # Cada canal é uma escolha independente; ambos começam em falso no formulário.
+        aceita_email = bool(consentimento_email.get())
+        aceita_whatsapp = bool(consentimento_whatsapp.get())
+        data_consentimento = datetime.now().astimezone().isoformat(timespec="seconds")
         
         m_cent = combo_tipo_carro.get().strip()
         modulo = combo_linha.get().strip()
@@ -776,7 +823,10 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
 
         try:
             cursor = conn.cursor()
-            cursor.execute("SELECT codigo FROM clientes WHERE codigo = %s;", (cod,))
+            cursor.execute(
+                f"SELECT codigo FROM clientes WHERE codigo = {config.PLACEHOLDER_SQL};",
+                (cod,)
+            )
             existe = cursor.fetchone()
 
             motivo_alt = ""
@@ -789,27 +839,31 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
                     return
 
                 cursor.execute(
-                    """UPDATE clientes SET nome = %s, tipo = %s, documento = %s, cep = %s, rua = %s, 
-                       numero = %s, bairro = %s, cidade = %s, contato = %s, email = %s, 
-                       modelo_central = %s, modulo = %s, mac_address = %s, operadora = %s, 
-                       linha_numero = %s, iccid = %s, data_atualizacao = %s WHERE codigo = %s;""",
-                    (nome, tipo, doc, cep, rua, numero, bairro, cidade, tel, email, 
-                     m_cent, modulo, mac, operadora, linha, iccid, data_atl, cod)
+                    """UPDATE clientes SET nome = ?, tipo = ?, documento = ?, cep = ?, rua = ?,
+                       numero = ?, bairro = ?, cidade = ?, contato = ?, email = ?,
+                       modelo_central = ?, modulo = ?, mac_address = ?, operadora = ?,
+                       linha_numero = ?, iccid = ?, data_atualizacao = ?, consentimento_email = ?,
+                       consentimento_whatsapp = ?, consentimento_atualizado_em = ? WHERE codigo = ?;""".replace("?", config.PLACEHOLDER_SQL),
+                    (nome, tipo, doc, cep, rua, numero, bairro, cidade, tel, email,
+                     m_cent, modulo, mac, operadora, linha, iccid, data_atl, aceita_email,
+                     aceita_whatsapp, data_consentimento, cod)
                 )
                 acao_log = f"Atualização de cadastro: {nome} | Motivo: {motivo_alt}"
             else:
                 cursor.execute(
-                    """INSERT INTO clientes (codigo, nome, tipo, documento, cep, rua, numero, bairro, cidade, 
-                       contato, email, modelo_central, modulo, mac_address, operadora, linha_numero, iccid, data_atualizacao) 
-                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""",
+                    """INSERT INTO clientes (codigo, nome, tipo, documento, cep, rua, numero, bairro, cidade,
+                       contato, email, modelo_central, modulo, mac_address, operadora, linha_numero, iccid, data_atualizacao,
+                       consentimento_email, consentimento_whatsapp, consentimento_atualizado_em)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""".replace("?", config.PLACEHOLDER_SQL),
                     (cod, nome, tipo, doc, cep, rua, numero, bairro, cidade, tel, email, 
-                     m_cent, modulo, mac, operadora, linha, iccid, data_atl)
+                     m_cent, modulo, mac, operadora, linha, iccid, data_atl, aceita_email,
+                     aceita_whatsapp, data_consentimento)
                 )
                 acao_log = f"Novo cadastro de cliente [{cod}] {nome}"
 
             data_hoje = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
             cursor.execute(
-                "INSERT INTO atualizacoes (data, num_conta, descricao_log, item, quantidade, usuario) VALUES (%s, %s, %s, %s, %s, %s);",
+                "INSERT INTO atualizacoes (data, num_conta, descricao_log, item, quantidade, usuario) VALUES (?, ?, ?, ?, ?, ?);".replace("?", config.PLACEHOLDER_SQL),
                 (data_hoje, str(cod), acao_log, "-", "-", config.usuario_logado)
             )
 
@@ -831,8 +885,8 @@ def mostrar_tela_clientes(janela_principal, limpar_tela, centralizar_janela, vol
     f_botoes = tk.Frame(frame_principal)
     f_botoes.pack(fill="x", pady=(4, 2))
     
-    tk.Button(f_botoes, text="💾 Salvar / Atualizar Cliente", command=salvar_cliente, bg="#38761D", fg="white", font=("Arial", 9, "bold"), height=2).pack(side="left", fill="x", expand=True, padx=(0, 5))
-    tk.Button(f_botoes, text="🧹 Limpar Campos", command=limpar_formulario, bg="#B45F06", fg="white", font=("Arial", 9, "bold"), height=2).pack(side="left", fill="x", expand=True, padx=(0, 5))
+    tk.Button(f_botoes, text="Salvar / Atualizar Cliente", command=salvar_cliente, bg="#38761D", fg="white", font=("Arial", 9, "bold"), height=2).pack(side="left", fill="x", expand=True, padx=(0, 5))
+    tk.Button(f_botoes, text="Limpar Campos", command=limpar_formulario, bg="#B45F06", fg="white", font=("Arial", 9, "bold"), height=2).pack(side="left", fill="x", expand=True, padx=(0, 5))
     tk.Button(frame_principal, text="⬅ Voltar ao Menu", command=voltar_menu_callback, bg="#595959", fg="white", font=("Arial", 9), height=1).pack(fill="x", pady=(2, 0))
 
 
@@ -847,7 +901,7 @@ def mostrar_tela_tecnicos(janela_principal, limpar_tela, centralizar_janela, vol
     frame_principal = tk.Frame(janela_principal, padx=20, pady=15)
     frame_principal.pack(fill="both", expand=True)
 
-    tk.Label(frame_principal, text="👨‍🔧 Mecânicos e técnicos", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 10))
+    tk.Label(frame_principal, text="Mecânicos e técnicos", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 10))
 
     f_form = tk.LabelFrame(frame_principal, text=" Dados cadastrais do técnico ", font=("Arial", 9, "bold"), padx=15, pady=10)
     f_form.pack(fill="x", pady=(0, 10))
@@ -1082,5 +1136,5 @@ def mostrar_tela_tecnicos(janela_principal, limpar_tela, centralizar_janela, vol
     f_botoes = tk.Frame(frame_principal)
     f_botoes.pack(fill="x", pady=(5, 5))
     
-    tk.Button(f_botoes, text="💾 Salvar / Atualizar Técnico", command=salvar_tecnico, bg="#38761D", fg="white", font=("Arial", 10, "bold"), height=2).pack(fill="x")
+    tk.Button(f_botoes, text="Salvar / Atualizar Técnico", command=salvar_tecnico, bg="#38761D", fg="white", font=("Arial", 10, "bold"), height=2).pack(fill="x")
     tk.Button(frame_principal, text="⬅ Voltar ao Menu", command=voltar_menu_callback, bg="#595959", fg="white", font=("Arial", 10), height=1).pack(fill="x", pady=(5, 0))

@@ -5,6 +5,7 @@ from tkinter import ttk, filedialog
 from datetime import datetime
 import config
 
+
 # ==========================================
 # 1. GERENCIAR FEED DE NOTÍCIAS (SUPABASE)
 # ==========================================
@@ -16,7 +17,7 @@ def mostrar_tela_gerenciar_feed(janela_principal, limpar_tela, centralizar_janel
     frame_principal = tk.Frame(janela_principal, padx=20, pady=15)
     frame_principal.pack(fill="both", expand=True)
 
-    tk.Label(frame_principal, text="📢 Avisos internos da oficina", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 10))
+    tk.Label(frame_principal, text="Avisos internos da oficina", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 10))
 
     f_form = tk.LabelFrame(frame_principal, text=" Publicar Novo Aviso no Feed ", font=("Arial", 9, "bold"), padx=12, pady=10)
     f_form.pack(fill="x", pady=(0, 12))
@@ -124,11 +125,11 @@ def mostrar_tela_gerenciar_feed(janela_principal, limpar_tela, centralizar_janel
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao excluir do banco: {e}")
 
-    tk.Button(f_form, text="📤 Publicar Aviso", command=publicar_aviso, bg="#38761D", fg="white", font=("Arial", 9, "bold"), width=16).pack(side="left", pady=4)
+    tk.Button(f_form, text="Publicar Aviso", command=publicar_aviso, bg="#38761D", fg="white", font=("Arial", 9, "bold"), width=16).pack(side="left", pady=4)
 
     f_botoes = tk.Frame(frame_principal)
     f_botoes.pack(fill="x", pady=(5, 5))
-    tk.Button(f_botoes, text="🗑️ Excluir Aviso Selecionado", command=excluir_aviso_selecionado, bg="#CC0000", fg="white", font=("Arial", 9, "bold"), width=25).pack(side="left")
+    tk.Button(f_botoes, text="Excluir Aviso Selecionado", command=excluir_aviso_selecionado, bg="#CC0000", fg="white", font=("Arial", 9, "bold"), width=25).pack(side="left")
 
     tk.Button(frame_principal, text="⬅ Voltar ao Menu", command=voltar_menu_callback, bg="#595959", fg="white", font=("Arial", 10), height=1).pack(fill="x", pady=(10, 0))
 
@@ -144,7 +145,7 @@ def mostrar_tela_configuracoes(janela_principal, limpar_tela, centralizar_janela
     frame_principal = tk.Frame(janela_principal, padx=25, pady=20)
     frame_principal.pack(fill="both", expand=True)
 
-    tk.Label(frame_principal, text="⚙️ Configurações da oficina", font=("Arial", 16, "bold")).pack(anchor="w", pady=(0, 10))
+    tk.Label(frame_principal, text="Configurações do Sistema", font=("Arial", 16, "bold")).pack(anchor="w", pady=(0, 10))
 
     # --- Bloco de Preferências ---
     f_opcoes = tk.LabelFrame(frame_principal, text=" Preferências Gerais ", font=("Arial", 9, "bold"), padx=15, pady=10)
@@ -159,7 +160,7 @@ def mostrar_tela_configuracoes(janela_principal, limpar_tela, centralizar_janela
     chk_modo = tk.Checkbutton(f_opcoes, text="Ativar Modo Escuro (Dark Theme)", variable=var_modo_escuro, command=alterar_modo_visual, font=("Arial", 10))
     chk_modo.pack(anchor="w", pady=2)
 
-    tk.Label(f_opcoes, text=f"Banco de Dados Ativo: Supabase PostgreSQL (Nuvem)[cite: 6]", font=("Arial", 9, "italic"), fg="gray").pack(anchor="w", pady=(6, 0))
+    tk.Label(f_opcoes, text=f"Banco de Dados Ativo: Supabase PostgreSQL", font=("Arial", 9, "italic"), fg="gray").pack(anchor="w", pady=(6, 0))
     tk.Label(f_opcoes, text=f"Usuário Conectado: {config.usuario_logado}", font=("Arial", 9, "italic"), fg="gray").pack(anchor="w", pady=(2, 0))
 
     f_pastas = tk.LabelFrame(frame_principal, text=" Pastas de arquivos gerados ", font=("Arial", 9, "bold"), padx=12, pady=8)
@@ -193,7 +194,7 @@ def mostrar_tela_configuracoes(janela_principal, limpar_tela, centralizar_janela
         except Exception as erro:
             messagebox.showerror("Erro", f"Não foi possível salvar as pastas: {erro}", parent=janela_principal)
 
-    tk.Button(f_pastas, text="💾 Salvar pastas de arquivos", command=salvar_pastas_arquivos, bg="#38761D", fg="white", font=("Arial", 9, "bold")).pack(anchor="e", pady=(6, 0))
+    tk.Button(f_pastas, text="Salvar pastas de arquivos", command=salvar_pastas_arquivos, bg="#38761D", fg="white", font=("Arial", 9, "bold")).pack(anchor="e", pady=(6, 0))
 
     # --- Bloco de Alteração de Senha ---
     f_senha = tk.LabelFrame(frame_principal, text=" Segurança: Alterar Senha do Usuário ", font=("Arial", 9, "bold"), padx=15, pady=10)
@@ -215,6 +216,12 @@ def mostrar_tela_configuracoes(janela_principal, limpar_tela, centralizar_janela
     entry_s_conf.grid(row=2, column=1, sticky="w", padx=10, pady=3)
 
     def processar_alteracao_senha():
+        """Confere a senha atual e grava a nova senha em formato hash.
+
+        Esta callback é acionada pelo botão de configurações. A verificação e a
+        geração do hash são centralizadas em `config.py`, para que o login e a
+        troca de senha usem exatamente o mesmo formato persistido no banco.
+        """
         s_atual = entry_s_atual.get().strip()
         s_nova = entry_s_nova.get().strip()
         s_conf = entry_s_conf.get().strip()
@@ -234,16 +241,22 @@ def mostrar_tela_configuracoes(janela_principal, limpar_tela, centralizar_janela
 
         try:
             cursor = conn.cursor()
-            cursor.execute("SELECT senha FROM usuarios WHERE username = %s;", (config.usuario_logado,))
+            cursor.execute(
+                f"SELECT senha FROM usuarios WHERE username = {config.PLACEHOLDER_SQL};",
+                (config.usuario_logado,)
+            )
             res = cursor.fetchone()
 
-            if not res or res[0] != s_atual:
+            if not res or not config.verificar_senha(res[0], s_atual):
                 messagebox.showerror("Erro", "A senha atual informada está incorreta!", parent=janela_principal)
                 cursor.close()
                 conn.close()
                 return
 
-            cursor.execute("UPDATE usuarios SET senha = %s WHERE username = %s;", (s_nova, config.usuario_logado))
+            cursor.execute(
+                f"UPDATE usuarios SET senha = {config.PLACEHOLDER_SQL} WHERE username = {config.PLACEHOLDER_SQL};",
+                (config.gerar_hash_senha(s_nova), config.usuario_logado)
+            )
             conn.commit()
             cursor.close()
             conn.close()
@@ -255,6 +268,6 @@ def mostrar_tela_configuracoes(janela_principal, limpar_tela, centralizar_janela
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao atualizar senha: {e}", parent=janela_principal)
 
-    tk.Button(f_senha, text="🔑 Atualizar Senha", command=processar_alteracao_senha, bg="#1F4E79", fg="white", font=("Arial", 9, "bold"), width=18).pack(anchor="e", pady=(5, 0))
+    tk.Button(f_senha, text="Atualizar Senha", command=processar_alteracao_senha, bg="#1F4E79", fg="white", font=("Arial", 9, "bold"), width=18).pack(anchor="e", pady=(5, 0))
 
     tk.Button(frame_principal, text="⬅ Voltar ao Menu", command=voltar_menu_callback, bg="#595959", fg="white", font=("Arial", 10), height=1).pack(fill="x")

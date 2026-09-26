@@ -66,7 +66,7 @@ def mostrar_tela_dashboard(janela_principal, limpar_tela, centralizar_janela, vo
     frame_principal = tk.Frame(janela_principal, padx=15, pady=12)
     frame_principal.pack(fill="both", expand=True)
 
-    tk.Label(frame_principal, text="📊 Painel da oficina", font=("Arial", 16, "bold")).pack(anchor="w", pady=(0, 8))
+    tk.Label(frame_principal, text="Painel da oficina", font=("Arial", 16, "bold")).pack(anchor="w", pady=(0, 8))
 
     f_controles = tk.LabelFrame(frame_principal, text=" Filtros e Opções de Visualização ", font=("Arial", 9, "bold"), padx=10, pady=8)
     f_controles.pack(fill="x", pady=(0, 8))
@@ -87,13 +87,13 @@ def mostrar_tela_dashboard(janela_principal, limpar_tela, centralizar_janela, vo
     f_kpis = tk.Frame(frame_principal)
     f_kpis.pack(fill="x", pady=(0, 8))
 
-    lbl_kpi_entradas = tk.Label(f_kpis, text="📥 Total Entradas: 0", font=("Arial", 10, "bold"), bg="#D9EAD3", fg="#274E13", padx=15, pady=8, relief="solid", bd=1)
+    lbl_kpi_entradas = tk.Label(f_kpis, text="Total Entradas: 0", font=("Arial", 10, "bold"), bg="#D9EAD3", fg="#274E13", padx=15, pady=8, relief="solid", bd=1)
     lbl_kpi_entradas.pack(side="left", padx=(0, 10), expand=True, fill="x")
 
-    lbl_kpi_saidas = tk.Label(f_kpis, text="🛠️ Ordens de serviço: 0", font=("Arial", 10, "bold"), bg="#F4CCCC", fg="#660000", padx=15, pady=8, relief="solid", bd=1)
+    lbl_kpi_saidas = tk.Label(f_kpis, text="Ordens de serviço: 0", font=("Arial", 10, "bold"), bg="#F4CCCC", fg="#660000", padx=15, pady=8, relief="solid", bd=1)
     lbl_kpi_saidas.pack(side="left", padx=(0, 10), expand=True, fill="x")
 
-    lbl_kpi_itens = tk.Label(f_kpis, text="🔩 Peças cadastradas: 0", font=("Arial", 10, "bold"), bg="#CFE2F3", fg="#1F4E79", padx=15, pady=8, relief="solid", bd=1)
+    lbl_kpi_itens = tk.Label(f_kpis, text="Peças cadastradas: 0", font=("Arial", 10, "bold"), bg="#CFE2F3", fg="#1F4E79", padx=15, pady=8, relief="solid", bd=1)
     lbl_kpi_itens.pack(side="left", expand=True, fill="x")
 
     frame_grafico = tk.Frame(frame_principal, bg="white", relief="solid", bd=1)
@@ -137,9 +137,9 @@ def mostrar_tela_dashboard(janela_principal, limpar_tela, centralizar_janela, vo
             except Exception as e:
                 print("Erro ao carregar dados do Supabase para o dashboard:", e)
 
-        lbl_kpi_entradas.config(text=f"📥 Total Entradas: {total_ent}")
-        lbl_kpi_saidas.config(text=f"🛠️ Ordens de serviço: {total_sai}")
-        lbl_kpi_itens.config(text=f"🔩 Peças cadastradas: {total_tipos_itens}")
+        lbl_kpi_entradas.config(text=f"Total Entradas: {total_ent}")
+        lbl_kpi_saidas.config(text=f"Ordens de serviço: {total_sai}")
+        lbl_kpi_itens.config(text=f"Peças cadastradas: {total_tipos_itens}")
 
         fig, ax = plt.subplots(figsize=(10, 4.3), dpi=100)
         fig.patch.set_facecolor('#F8F9FA')
@@ -207,7 +207,7 @@ def mostrar_tela_relatorio_financeiro(janela_principal, limpar_tela, centralizar
     frame_principal = tk.Frame(janela_principal, padx=15, pady=12)
     frame_principal.pack(fill="both", expand=True)
 
-    tk.Label(frame_principal, text="💰 Detalhamento de Ordens de Compra & Itens (Nuvem)", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 10))
+    tk.Label(frame_principal, text="Detalhamento de Ordens de Compra & Itens", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 10))
 
     frame_tabela = tk.Frame(frame_principal)
     frame_tabela.pack(fill="both", expand=True, pady=(0, 10))
@@ -326,7 +326,7 @@ def mostrar_tela_previa_relatorio(janela_principal, limpar_tela, centralizar_jan
     frame_principal = tk.Frame(janela_principal, padx=15, pady=12)
     frame_principal.pack(fill="both", expand=True)
 
-    tk.Label(frame_principal, text="📊 Serviços e ordens de serviço", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 8))
+    tk.Label(frame_principal, text="Serviços e ordens de serviço", font=("Arial", 15, "bold")).pack(anchor="w", pady=(0, 8))
 
     # --- FILTROS DE PESQUISA E COBRANÇA ---
     f_filtros = tk.LabelFrame(frame_principal, text=" Filtros de clientes, serviços e cobrança ", font=("Arial", 9, "bold"), padx=10, pady=8)
@@ -511,7 +511,7 @@ def mostrar_tela_previa_relatorio(janela_principal, limpar_tela, centralizar_jan
         f_det = tk.Frame(top_detalhes, padx=15, pady=15)
         f_det.pack(fill="both", expand=True)
 
-        tk.Label(f_det, text=f"🔍 Detalhamento Completo da Ordem de Serviço {num_os_exibicao}", font=("Arial", 13, "bold"), fg="#1F4E79").pack(anchor="w", pady=(0, 10))
+        tk.Label(f_det, text=f"Detalhamento Completo da Ordem de Serviço {num_os_exibicao}", font=("Arial", 13, "bold"), fg="#1F4E79").pack(anchor="w", pady=(0, 10))
 
         txt_det = tk.Text(f_det, font=("Arial", 10), height=18, wrap="word", bg="#F8F9FA")
         txt_det.pack(fill="both", expand=True, pady=(0, 10))
@@ -634,9 +634,9 @@ def mostrar_tela_previa_relatorio(janela_principal, limpar_tela, centralizar_jan
     f_botoes = tk.Frame(frame_principal)
     f_botoes.pack(fill="x", pady=(4, 0))
 
-    tk.Button(f_botoes, text="🔍 Filtrar", command=carregar_dados_filtrados, bg="#1F4E79", fg="white", font=("Arial", 9, "bold"), height=2).pack(side="left", fill="x", expand=True, padx=(0, 4))
-    tk.Button(f_botoes, text="📋 Ver Detalhes da OS", command=abrir_janela_detalhes_os, bg="#2F5597", fg="white", font=("Arial", 9, "bold"), height=2).pack(side="left", fill="x", expand=True, padx=(0, 4))
-    tk.Button(f_botoes, text="⚙️ Alterar Status", command=alterar_status_os_selecionada, bg="#B45F06", fg="white", font=("Arial", 9, "bold"), height=2).pack(side="left", fill="x", expand=True, padx=(0, 4))
+    tk.Button(f_botoes, text="Filtrar", command=carregar_dados_filtrados, bg="#1F4E79", fg="white", font=("Arial", 9, "bold"), height=2).pack(side="left", fill="x", expand=True, padx=(0, 4))
+    tk.Button(f_botoes, text="Ver Detalhes da OS", command=abrir_janela_detalhes_os, bg="#2F5597", fg="white", font=("Arial", 9, "bold"), height=2).pack(side="left", fill="x", expand=True, padx=(0, 4))
+    tk.Button(f_botoes, text="Alterar Status", command=alterar_status_os_selecionada, bg="#B45F06", fg="white", font=("Arial", 9, "bold"), height=2).pack(side="left", fill="x", expand=True, padx=(0, 4))
 
     def gerar_relatorio_final_excel():
         try:
@@ -661,5 +661,6 @@ def mostrar_tela_previa_relatorio(janela_principal, limpar_tela, centralizar_jan
         except Exception as e:
             messagebox.showerror("Erro", f"Não foi possível gerar o relatório em Excel: {e}", parent=janela_principal)
 
-    tk.Button(f_botoes, text="📥 Excel Detalhado", command=gerar_relatorio_final_excel, bg="#38761D", fg="white", font=("Arial", 9, "bold"), height=2).pack(side="left", fill="x", expand=True, padx=(0, 4))
+    tk.Button(f_botoes, text="Excel Detalhado", command=gerar_relatorio_final_excel, bg="#38761D", fg="white", font=("Arial", 9, "bold"), height=2).pack(side="left", fill="x", expand=True, padx=(0, 4))
     tk.Button(frame_principal, text="⬅ Voltar ao Menu", command=voltar_menu_callback, bg="#595959", fg="white", font=("Arial", 10), height=1).pack(fill="x", pady=(5, 0))
+

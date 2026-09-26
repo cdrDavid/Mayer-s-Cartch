@@ -26,6 +26,7 @@ def informar_arquivo_gerado(titulo, caminho, janela_pai):
         except Exception as erro:
             messagebox.showerror("Erro", f"Não foi possível abrir o arquivo:\n{erro}", parent=janela_pai)
 
+
 def gerar_pdf_ordem_servico(num_os, nome_cliente, tipo_cliente, itens_os, valor_mao_obra, janela_pai):
     """Gera um PDF formatado para a Ordem de Serviço (OS)"""
     try:
